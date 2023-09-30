@@ -51,6 +51,7 @@
   void name(_ARGPAIRS(__VA_ARGS__), rrr::DeferredReply* defer) override { \
     verify(svr_ != nullptr); \
     if (svr_->IsDisconnected()) { \
+      Log_info("server is disconnected"); \
       OnDisconnected##name(_PARAMS(__VA_ARGS__)); \
       defer->reply(); \
     }  else { \

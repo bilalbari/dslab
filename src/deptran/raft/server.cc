@@ -1,5 +1,3 @@
-
-
 #include "server.h"
 // #include "paxos_worker.h"
 #include "exec.h"
@@ -12,6 +10,16 @@ namespace janus {
 
 RaftServer::RaftServer(Frame * frame) {
   frame_ = frame ;
+  mtx_.lock();
+  currentTerm = 0;
+  votedFor = -1;
+  state = "follower";
+  lastStartTime = chrono::system_clock::now();
+  lastLogIndex = 0;
+  lastLogTerm = 0;
+  stateLog = vector<MY_LOG*>();
+  mtx_.unlock();
+  Log_info("Server initialization completed for %lli",loc_id_);
   /* Your code here for server initialization. Note that this function is 
      called in a different OS thread. Be careful about thread safety if 
      you want to initialize variables here. */
@@ -24,26 +32,40 @@ RaftServer::~RaftServer() {
 }
 
 void RaftServer::Setup() {
-  /* Your code here for server setup. Due to the asynchronous nature of the 
-     framework, this function could be called after a RPC handler is triggered. 
-     Your code should be aware of that. This function is always called in the 
-     same OS thread as the RPC handlers. */
-  SyncRpcExample();
+  convertToFollower(0);
+  // SyncRpcExample();
 }
 
 bool RaftServer::Start(shared_ptr<Marshallable> &cmd,
                        uint64_t *index,
                        uint64_t *term) {
   /* Your code here. This function can be called from another OS thread. */
-  *index = 0;
-  *term = 0;
-  return false;
+  mtx_.lock();
+  *term = currentTerm;
+  *index = lastLogIndex;
+  string temp_state = state;
+  mtx_.unlock();
+  if(temp_state != "leader")
+  {
+    Log_info("Not the leader, returning false from start");
+    return false;
+  }
+  else{
+    Log_info("Server is the leader. returning true");
+    return true;
+  }
 }
 
 void RaftServer::GetState(bool *is_leader, uint64_t *term) {
   /* Your code here. This function can be called from another OS thread. */
-  *is_leader = 0;
-  *term = 0;
+  mtx_.lock();
+  if(state == "leader")
+    *is_leader = true;
+  else{
+    *is_leader = false;
+  }
+  *term = currentTerm;
+  mtx_.unlock();
 }
 
 void RaftServer::SyncRpcExample() {
@@ -53,6 +75,7 @@ void RaftServer::SyncRpcExample() {
      to send/recv a Marshallable object over RPC. */
   Coroutine::CreateRun([this](){
     string res;
+
     auto event = commo()->SendString(0, /* partition id is always 0 for lab1 */
                                      0, "hello", &res);
     event->Wait(1000000); //timeout after 1000000us=1s
