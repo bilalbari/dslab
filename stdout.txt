@@ -1,0 +1,816 @@
+I [../src/deptran/s_main.cc:136] 2023-09-30 20:19:34.818 | PWD : 
+I [../src/deptran/s_main.cc:284] 2023-09-30 20:19:34.818 | starting process 18434
+I [../src/deptran/s_main.cc:279] 2023-09-30 20:19:34.818 | ulimit -n is 1024
+I [../src/deptran/config.cc:293] 2023-09-30 20:19:34.818 | LoadYML: config/raft_lab_test.yml
+I [../src/deptran/config.cc:411] 2023-09-30 20:19:34.819 | BuildSiteProcMap
+I [../src/deptran/config.cc:287] 2023-09-30 20:19:34.819 | no benchmark or table schema given
+I [../src/deptran/s_main.cc:290] 2023-09-30 20:19:34.819 | Read config finish
+I [../src/deptran/s_main.cc:74] 2023-09-30 20:19:34.819 | server enabled, number of sites: 5
+I [../src/deptran/s_main.cc:80] 2023-09-30 20:19:34.820 | launching site: 0, bind address 0.0.0.0:8101
+I [../src/deptran/s_main.cc:80] 2023-09-30 20:19:34.820 | launching site: 1, bind address 0.0.0.0:8102
+I [../src/deptran/s_main.cc:80] 2023-09-30 20:19:34.820 | launching site: 2, bind address 0.0.0.0:8103
+I [../src/deptran/server_worker.cc:55] 2023-09-30 20:19:34.820 | Is it replicated: 1
+I [../src/deptran/server_worker.cc:55] 2023-09-30 20:19:34.820 | Is it replicated: 1
+I [../src/deptran/raft/server.cc:22] 2023-09-30 20:19:34.820 | Server initialization completed for 4294967295
+I [../src/deptran/s_main.cc:90] 2023-09-30 20:19:34.820 | table popped for site 0
+I [../src/deptran/server_worker.cc:128] 2023-09-30 20:19:34.820 | enter SetupService for s101 @ 0.0.0.0:8101
+I [../src/deptran/server_worker.cc:55] 2023-09-30 20:19:34.820 | Is it replicated: 1
+I [../src/deptran/raft/server.cc:22] 2023-09-30 20:19:34.820 | Server initialization completed for 4294967295
+I [../src/deptran/s_main.cc:80] 2023-09-30 20:19:34.820 | launching site: 3, bind address 0.0.0.0:8104
+I [../src/rrr/rpc/server.cpp:575] 2023-09-30 20:19:34.820 | bind address is: 0.0.0.0:8101I [../src/deptran/raft/server.cc:22] 2023-09-30 20:19:34.820 | Server initialization completed for 4294967295
+I [../src/deptran/s_main.cc:90] 2023-09-30 20:19:34.820 | table popped for site 2
+I [../src/deptran/server_worker.cc:128] 2023-09-30 20:19:34.820 | enter SetupService for s103 @ 0.0.0.0:8103
+I [../src/deptran/server_worker.cc:55] 2023-09-30 20:19:34.820 | Is it replicated: 1
+I [../src/deptran/raft/server.cc:22] 2023-09-30 20:19:34.820 | Server initialization completed for 4294967295
+
+I [../src/deptran/s_main.cc:90] 2023-09-30 20:19:34.820 | table popped for site 3
+I [../src/deptran/server_worker.cc:128] 2023-09-30 20:19:34.820 | enter SetupService for s104 @ 0.0.0.0:8104
+I [../src/rrr/rpc/server.cpp:575] 2023-09-30 20:19:34.820 | bind address is: 0.0.0.0:8103
+I [../src/deptran/s_main.cc:80] 2023-09-30 20:19:34.820 | launching site: 4, bind address 0.0.0.0:8105
+I [../src/deptran/server_worker.cc:55] 2023-09-30 20:19:34.820 | Is it replicated: 1
+I [../src/deptran/raft/server.cc:22] 2023-09-30 20:19:34.820 | Server initialization completed for 4294967295
+I [../src/rrr/rpc/server.cpp:575] 2023-09-30 20:19:34.820 | bind address is: 0.0.0.0:8104
+I [../src/deptran/s_main.cc:90] 2023-09-30 20:19:34.820 | table popped for site 4
+I [../src/deptran/server_worker.cc:128] 2023-09-30 20:19:34.820 | enter SetupService for s105 @ 0.0.0.0:8105
+I [../src/rrr/reactor/reactor.cc:390] 2023-09-30 20:19:34.820 | starting disk thread
+I [../src/rrr/rpc/server.cpp:575] 2023-09-30 20:19:34.820 | bind address is: 0.0.0.0:8105
+I [../src/rrr/reactor/reactor.cc:394] 2023-09-30 20:19:34.820 | starting poll thread
+I [../src/rrr/reactor/reactor.cc:390] 2023-09-30 20:19:34.820 | starting disk thread
+I [../src/rrr/rpc/server.cpp:570] 2023-09-30 20:19:34.820 | rrr::Server: started on 0.0.0.0:8101I [../src/rrr/rpc/server.cpp:570] 2023-09-30 20:19:34.820 | rrr::Server: started on 0.0.0.0:8103
+I [../src/rrr/reactor/reactor.cc:394] 2023-09-30 20:19:34.820 | starting poll thread
+I [../src/rrr/rpc/server.cpp:570] 2023-09-30 20:19:34.820 | rrr::Server: started on 0.0.0.0:8105
+I [../src/deptran/server_worker.cc:180] 2023-09-30 20:19:34.820 | Server s105 ready at 0.0.0.0:8105
+I [../src/rrr/reactor/reactor.cc:390] 2023-09-30 20:19:34.820 | starting disk thread
+I [../src/deptran/s_main.cc:96] 2023-09-30 20:19:34.821 | start communication for site 4
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:34.821 | size of partitions: 1
+I [../src/deptran/server_worker.cc:180] 2023-09-30 20:19:34.820 | Server s101 ready at 0.0.0.0:8101
+I [../src/rrr/reactor/reactor.cc:394] 2023-09-30 20:19:34.821 | starting poll thread
+I [../src/deptran/s_main.cc:96] 2023-09-30 20:19:34.821 | start communication for site 0
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:34.821 | size of partitions: 1
+
+I [../src/deptran/server_worker.cc:180] 2023-09-30 20:19:34.821 | Server s103 ready at 0.0.0.0:8103
+I [../src/deptran/s_main.cc:96] 2023-09-30 20:19:34.821 | start communication for site 2
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:34.821 | size of partitions: 1
+I [../src/rrr/reactor/reactor.cc:390] 2023-09-30 20:19:34.821 | starting disk thread
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.821 | connect to site: 127.0.0.1:8101 success!
+I [../src/rrr/reactor/reactor.cc:394] 2023-09-30 20:19:34.821 | starting poll thread
+I [../src/deptran/s_main.cc:90] 2023-09-30 20:19:34.820 | table popped for site 1
+I [../src/deptran/server_worker.cc:128] 2023-09-30 20:19:34.821 | enter SetupService for s102 @ 0.0.0.0:8102
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.821 | connect to site: 127.0.0.1:8101 success!
+I [../src/rrr/rpc/server.cpp:575] 2023-09-30 20:19:34.821 | bind address is: 0.0.0.0:8102
+I [../src/rrr/rpc/server.cpp:570] 2023-09-30 20:19:34.820 | rrr::Server: started on 0.0.0.0:8104
+I [../src/rrr/reactor/reactor.cc:390] 2023-09-30 20:19:34.821 | starting disk threadI [../src/deptran/server_worker.cc:180] 2023-09-30 20:19:34.821 | Server s104 ready at 0.0.0.0:8104
+
+I [../src/rrr/rpc/server.cpp:570] 2023-09-30 20:19:34.821 | rrr::Server: started on 0.0.0.0:8102
+I [../src/deptran/server_worker.cc:180] 2023-09-30 20:19:34.821 | Server s102 ready at 0.0.0.0:8102
+I [../src/deptran/s_main.cc:96] 2023-09-30 20:19:34.821 | start communication for site 1
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:34.821 | size of partitions: 1
+I [../src/rrr/reactor/reactor.cc:394] 2023-09-30 20:19:34.821 | starting poll thread
+I [../src/deptran/s_main.cc:96] 2023-09-30 20:19:34.821 | start communication for site 3
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:34.821 | size of partitions: 1
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.821 | connect to site: 127.0.0.1:8101 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.821 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.821 | connect to site: 127.0.0.1:8101 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.821 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:34.822 | size of partitions: 1
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8101 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:34.822 | size of partitions: 1
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8101 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/s_main.cc:98] 2023-09-30 20:19:34.822 | site 1 launched!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/s_main.cc:98] 2023-09-30 20:19:34.822 | site 3 launched!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.821 | connect to site: 127.0.0.1:8101 success!
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:34.822 | Started as follower for server 3
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:34.822 | Timeout for server 3 is 6
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:34.822 | size of partitions: 1
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.822 | connect to site: 127.0.0.1:8101 success!
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:34.822 | Started as follower for server 1
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:34.822 | Timeout for server 1 is 8
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.823 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.823 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.823 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:34.823 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/s_main.cc:98] 2023-09-30 20:19:34.823 | site 2 launched!
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:34.823 | Started as follower for server 2
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:34.823 | Timeout for server 2 is 5
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:35.821 | size of partitions: 1
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8101 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/s_main.cc:98] 2023-09-30 20:19:35.821 | site 4 launched!
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:35.821 | Started as follower for server 4
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:35.821 | Timeout for server 4 is 6
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.821 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.822 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/communicator.cc:25] 2023-09-30 20:19:35.822 | size of partitions: 1
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.822 | connect to site: 127.0.0.1:8101 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.822 | connect to site: 127.0.0.1:8102 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.822 | connect to site: 127.0.0.1:8103 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.822 | connect to site: 127.0.0.1:8104 success!
+I [../src/deptran/communicator.cc:191] 2023-09-30 20:19:35.822 | connect to site: 127.0.0.1:8105 success!
+I [../src/deptran/raft/frame.cc:143] 2023-09-30 20:19:35.822 | raft_test_coro_ id=4
+TEST 1: Initial election
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:35.822 | Time spent as follower 1.000152 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:35.823 | Time spent as follower 1.000494 for server 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:35.824 | Time spent as follower 1.000353 for server 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:36.822 | Time spent as follower 1.000105 for server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:36.822 | Time spent as follower 2.000316 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:36.823 | Time spent as follower 2.000755 for server 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:36.824 | Time spent as follower 2.000594 for server 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:37.822 | Time spent as follower 2.000479 for server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:37.823 | Time spent as follower 3.000623 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:37.824 | Time spent as follower 3.001099 for server 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:37.824 | Time spent as follower 3.000784 for server 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:38.822 | Time spent as follower 3.000761 for server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:38.823 | Time spent as follower 4.001042 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:38.824 | Time spent as follower 4.001321 for server 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:38.824 | Time spent as follower 4.000881 for server 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:39.822 | Time spent as follower 4.000854 for server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:39.824 | Time spent as follower 5.001410 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:39.824 | Time spent as follower 5.001579 for server 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:39.824 | Time spent as follower 5.000971 for server 2
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:19:39.824 | Timeout completed as follower for 2. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:39.824 | Candidate timeout for server 2 is 5
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:39.824 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:39.824 | Calling request vote to 0 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:39.825 | Received request vote for 2 on server 0
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:39.825 | Started as follower for server 0
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:39.825 | Timeout for server 0 is 8
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:40.824 | Time spent as follower 5.002114 for server 4
+TEST 1 Failed: waited too long for leader election
+TESTS FAILED
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:40.824 | Time spent as follower 6.001973 for server 3
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:19:40.824 | Timeout completed as follower for 3. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:40.824 | Candidate timeout for server 3 is 6
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:40.824 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:40.824 | Calling request vote to 0 from 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:40.824 | Time spent as follower 6.001927 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:40.825 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:40.825 | Calling request vote to 1 from 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:40.825 | Time spent as follower 1.000099 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:41.824 | Time spent as follower 6.002389 for server 4
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:19:41.824 | Timeout completed as follower for 4. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:41.824 | Candidate timeout for server 4 is 6
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:41.824 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:41.824 | Calling request vote to 0 from 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:41.825 | Time spent as follower 7.002295 for server 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:41.825 | Time spent as follower 2.000258 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:41.825 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:41.825 | Calling request vote to 1 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:41.825 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:41.825 | Calling request vote to 3 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:41.825 | Received request vote for 2 on server 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:41.825 | Calling request vote to 4 from 2
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:41.825 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:42.825 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:42.825 | Calling request vote to 1 from 4
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:42.825 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:42.825 | Calling request vote to 2 from 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:42.825 | Time spent as follower 3.000464 for server 0I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:42.825 | Time spent as follower 8.002897 for server 1
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:19:42.825 | Timeout completed as follower for 1. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:42.825 | Candidate timeout for server 1 is 8
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:42.825 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:42.825 | Calling request vote to 0 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:42.825 | Received request vote for 2 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:42.825 | Received request vote for 3 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:42.825 | Received request vote for 4 on server 1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:42.825 | Time spent as candidate for server 2 is 3.000998
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:42.826 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:42.826 | Calling request vote to 0 from 2
+
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:42.826 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:42.826 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:42.826 | Calling request vote to 2 from 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:42.826 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:42.826 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:42.826 | Received request vote for 3 on server 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:43.826 | Time spent as candidate for server 3 is 3.001492
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:43.826 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:43.826 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:43.826 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:43.826 | Calling request vote to 2 from 1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:43.826 | Time spent as candidate for server 4 is 2.002023
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:43.826 | Received request vote for 1 on server 2
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:43.826 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:43.826 | Calling request vote to 0 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:43.826 | Received request vote for 2 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:43.826 | Received request vote for 3 on server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:43.826 | Time spent as follower 4.001130 for server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:43.826 | Received request vote for 4 on server 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:43.826 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:43.827 | Calling request vote to 1 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:43.827 | Received request vote for 4 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:43.827 | Calling request vote to 3 from 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:43.827 | Calling request vote to 4 from 1
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:43.827 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:44.826 | Time spent as follower 5.001666 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:44.826 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.828 | Calling request vote to 1 from 3
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:44.827 | Time spent as candidate for server 1 is 2.001397
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:44.828 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.828 | Calling request vote to 0 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:44.828 | Received request vote for 2 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:44.828 | Received request vote for 3 on server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:44.827 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.828 | Calling request vote to 3 from 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.828 | Calling request vote to 4 from 2
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:44.828 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:44.829 | Received request vote for 1 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:44.829 | Received request vote for 2 on server 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.829 | Calling request vote to 2 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.829 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:44.829 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:44.827 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.829 | Calling request vote to 1 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:44.829 | Received request vote for 1 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:44.831 | Received request vote for 4 on server 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.831 | Calling request vote to 2 from 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:44.831 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:44.831 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:45.828 | Time spent as follower 6.003650 for server 0
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:45.829 | Time spent as candidate for server 2 is 6.004208
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:19:45.829 | Time elapsed since one election without result for 2
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:45.829 | Candidate timeout for server 2 is 5
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:45.829 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:45.829 | Calling request vote to 0 from 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:45.829 | Time spent as candidate for server 3 is 5.004611
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:45.829 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:45.829 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:45.829 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:45.829 | Calling request vote to 2 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:45.829 | Received request vote for 3 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:45.829 | Received request vote for 1 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:45.830 | Calling request vote to 3 from 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:45.830 | Calling request vote to 4 from 1
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:45.830 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:45.832 | Time spent as candidate for server 4 is 4.007713
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:45.832 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:45.832 | Calling request vote to 0 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:45.832 | Received request vote for 2 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:45.832 | Received request vote for 4 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:45.832 | Received request vote for 4 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:45.832 | Received request vote for 3 on server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:46.828 | Time spent as follower 7.003805 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:46.829 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:46.829 | Calling request vote to 1 from 2
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:46.829 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:46.829 | Calling request vote to 1 from 3
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:46.830 | Time spent as candidate for server 1 is 4.004416
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:46.830 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:46.830 | Calling request vote to 0 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:46.830 | Received request vote for 2 on server 1
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:46.830 | Started as follower for server 1
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:46.830 | Timeout for server 1 is 8
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:46.830 | Received request vote for 1 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:46.830 | Received request vote for 1 on server 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:46.834 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:46.834 | Calling request vote to 1 from 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:47.829 | Time spent as follower 8.004101 for server 0
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:19:47.829 | Timeout completed as follower for 0. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:47.829 | Candidate timeout for server 0 is 8
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:47.829 | Inside request vote for 0
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:47.829 | Calling request vote to 1 from 0
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:47.829 | Started as follower for server 0
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:47.829 | Timeout for server 0 is 8
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:47.830 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:47.830 | Calling request vote to 2 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:47.830 | Received request vote for 3 on server 2
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:47.830 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:47.830 | Calling request vote to 3 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:47.830 | Received request vote for 2 on server 3
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:47.830 | Started as follower for server 3
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:47.830 | Timeout for server 3 is 6
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:47.830 | Time spent as follower 1.000197 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:47.834 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:47.834 | Calling request vote to 2 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:47.834 | Received request vote for 4 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:47.834 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:47.834 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:48.829 | Time spent as follower 1.000198 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:48.830 | Request vote to 3 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:48.830 | Calling request vote to 4 from 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:48.830 | Time spent as follower 1.000201 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:48.831 | Time spent as follower 2.000773 for server 1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:48.834 | Time spent as candidate for server 4 is 7.010466
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:19:48.834 | Time elapsed since one election without result for 4
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:48.834 | Candidate timeout for server 4 is 6
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:48.834 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:48.834 | Calling request vote to 0 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:48.835 | Received request vote for 2 on server 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:48.835 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:49.829 | Time spent as follower 2.000457 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:49.831 | Time spent as follower 2.000497 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:49.831 | Time spent as follower 3.001088 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:49.835 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:49.835 | Calling request vote to 1 from 4
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:49.835 | Time spent as candidate for server 2 is 4.006316
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:49.835 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:49.835 | Calling request vote to 0 from 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:50.831 | Time spent as follower 3.001785 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:50.831 | Time spent as follower 3.000540 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:50.831 | Time spent as follower 4.001166 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:50.835 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:50.835 | Calling request vote to 2 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:50.835 | Received request vote for 4 on server 2
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:50.836 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:50.836 | Calling request vote to 1 from 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:50.839 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:50.839 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:51.831 | Time spent as follower 4.000718 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:51.831 | Time spent as follower 4.002008 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:51.831 | Time spent as follower 5.001578 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:51.837 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:51.837 | Calling request vote to 3 from 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:51.839 | Time spent as candidate for server 4 is 3.005005
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:51.839 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:51.839 | Calling request vote to 0 from 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:52.831 | Time spent as follower 5.001183 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:52.832 | Time spent as follower 5.002632 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:52.832 | Time spent as follower 6.001780 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:52.837 | Request vote to 3 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:52.837 | Calling request vote to 4 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:52.837 | Received request vote for 2 on server 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:52.837 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:52.841 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:52.841 | Calling request vote to 1 from 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:53.832 | Time spent as follower 6.001442 for server 3
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:19:53.832 | Timeout completed as follower for 3. Switching to candidate
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:53.832 | Time spent as follower 6.002749 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:53.832 | Time spent as follower 7.001886 for server 1
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:53.832 | Candidate timeout for server 3 is 6
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:53.832 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:53.832 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:53.832 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:53.832 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:53.837 | Time spent as candidate for server 2 is 8.008597
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:19:53.837 | Time elapsed since one election without result for 2
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:53.837 | Candidate timeout for server 2 is 5
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:53.837 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:53.837 | Calling request vote to 0 from 2
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:53.841 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:53.841 | Calling request vote to 2 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:53.841 | Received request vote for 4 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:53.841 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:53.841 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:54.832 | Time spent as follower 8.001980 for server 1
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:19:54.833 | Timeout completed as follower for 1. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:54.833 | Candidate timeout for server 1 is 8
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:54.833 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.833 | Calling request vote to 0 from 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:54.832 | Time spent as follower 7.002892 for server 0
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:54.832 | Time spent as candidate for server 3 is 1.000319
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:54.835 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.835 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:54.835 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.835 | Calling request vote to 1 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.835 | Received request vote for 4 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.835 | Received request vote for 4 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.835 | Received request vote for 2 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.835 | Received request vote for 3 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.835 | Received request vote for 3 on server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:54.836 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.836 | Calling request vote to 2 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.836 | Received request vote for 4 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.836 | Received request vote for 4 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.836 | Received request vote for 4 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.836 | Received request vote for 2 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.836 | Received request vote for 1 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.836 | Calling request vote to 3 from 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.836 | Calling request vote to 4 from 1
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:54.836 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.836 | Calling request vote to 2 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.836 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:54.836 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:54.838 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.838 | Calling request vote to 1 from 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:54.842 | Time spent as candidate for server 4 is 6.007113
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:19:54.842 | Time elapsed since one election without result for 4
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:54.842 | Candidate timeout for server 4 is 6
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:54.842 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:54.842 | Calling request vote to 0 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:54.842 | Received request vote for 3 on server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:55.835 | Time spent as follower 8.005990 for server 0
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:19:55.835 | Timeout completed as follower for 0. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:55.835 | Candidate timeout for server 0 is 8
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:55.835 | Inside request vote for 0
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.835 | Calling request vote to 1 from 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:55.835 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.835 | Calling request vote to 2 from 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.835 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.835 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.835 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.835 | Received request vote for 3 on server 0
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:19:55.835 | Started as follower for server 0
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:19:55.835 | Timeout for server 0 is 8
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:55.836 | Time spent as candidate for server 1 is 1.003217
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:55.836 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.836 | Calling request vote to 0 from 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:55.836 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.836 | Calling request vote to 2 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.836 | Received request vote for 2 on server 1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:55.836 | Time spent as candidate for server 3 is 2.004623
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:55.836 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.836 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:55.836 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.836 | Calling request vote to 1 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.837 | Received request vote for 4 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.837 | Received request vote for 1 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.837 | Received request vote for 1 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.837 | Received request vote for 3 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.837 | Received request vote for 1 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.837 | Received request vote for 3 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:55.838 | Received request vote for 3 on server 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.838 | Calling request vote to 3 from 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.838 | Calling request vote to 4 from 1
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:55.838 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.838 | Calling request vote to 3 from 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.838 | Calling request vote to 4 from 2
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:55.838 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:55.843 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:55.843 | Calling request vote to 1 from 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:56.835 | Time spent as follower 1.000172 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:56.837 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.837 | Calling request vote to 1 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:56.837 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.837 | Calling request vote to 2 from 3
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:56.838 | Time spent as candidate for server 2 is 3.000638
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:56.838 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.838 | Calling request vote to 0 from 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:56.838 | Time spent as candidate for server 1 is 2.004994
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:56.838 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.838 | Calling request vote to 0 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:56.838 | Received request vote for 3 on server 2
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:56.838 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.838 | Calling request vote to 2 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:56.838 | Received request vote for 3 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:56.838 | Received request vote for 4 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:56.838 | Received request vote for 2 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:56.838 | Received request vote for 1 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:56.838 | Received request vote for 2 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:56.838 | Received request vote for 1 on server 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.838 | Calling request vote to 2 from 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.838 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:56.838 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:56.838 | Received request vote for 1 on server 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.838 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:56.838 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.839 | Calling request vote to 3 from 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:56.839 | Calling request vote to 4 from 1
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:56.839 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:57.836 | Time spent as follower 2.000543 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:57.838 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.838 | Calling request vote to 1 from 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:57.839 | Time spent as candidate for server 4 is 2.997093
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:57.839 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.839 | Calling request vote to 0 from 4
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:57.839 | Time spent as candidate for server 3 is 4.006911
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:57.839 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.839 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.839 | Calling request vote to 2 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.839 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:57.839 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:57.839 | Received request vote for 4 on server 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:57.839 | Time spent as candidate for server 1 is 3.006226
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:57.839 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.839 | Calling request vote to 0 from 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:57.839 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.839 | Calling request vote to 2 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:57.839 | Received request vote for 2 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:57.839 | Received request vote for 1 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:57.840 | Received request vote for 1 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.840 | Calling request vote to 3 from 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:57.840 | Calling request vote to 4 from 2
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:57.840 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:58.836 | Time spent as follower 3.000731 for server 0
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:58.839 | Time spent as candidate for server 3 is 5.007299
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:58.839 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.839 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:58.839 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.839 | Calling request vote to 1 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:58.839 | Received request vote for 4 on server 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.839 | Calling request vote to 2 from 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.839 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:58.839 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:58.840 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.840 | Calling request vote to 1 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:58.840 | Received request vote for 1 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:58.840 | Received request vote for 4 on server 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:58.840 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.840 | Calling request vote to 2 from 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:58.840 | Request vote to 2 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.840 | Calling request vote to 3 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:58.840 | Received request vote for 3 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:58.840 | Received request vote for 1 on server 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.840 | Calling request vote to 2 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.840 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:58.840 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:58.841 | Time spent as candidate for server 2 is 5.003238
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:19:58.841 | Time elapsed since one election without result for 2
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:58.841 | Candidate timeout for server 2 is 5
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:58.841 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.841 | Calling request vote to 0 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:58.841 | Received request vote for 1 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:58.841 | Received request vote for 3 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:58.841 | Calling request vote to 4 from 1
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:58.841 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:19:59.836 | Time spent as follower 4.000801 for server 0
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:59.840 | Time spent as candidate for server 4 is 4.997929
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:59.840 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:59.840 | Calling request vote to 0 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:59.840 | Received request vote for 3 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:59.840 | Received request vote for 3 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:59.840 | Received request vote for 2 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:59.840 | Received request vote for 4 on server 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:59.840 | Time spent as candidate for server 3 is 6.008588
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:19:59.840 | Time elapsed since one election without result for 3
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:19:59.840 | Candidate timeout for server 3 is 6
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:59.840 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:59.840 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:59.840 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:59.840 | Calling request vote to 1 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:59.840 | Received request vote for 2 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:59.840 | Received request vote for 4 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:59.841 | Received request vote for 3 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:19:59.841 | Received request vote for 3 on server 2
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:19:59.841 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:59.841 | Calling request vote to 1 from 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:19:59.841 | Time spent as candidate for server 1 is 5.008201
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:19:59.841 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:59.841 | Calling request vote to 0 from 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:59.841 | Calling request vote to 3 from 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:19:59.841 | Calling request vote to 4 from 1
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:19:59.841 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:00.836 | Time spent as follower 5.000926 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:00.840 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:00.840 | Calling request vote to 1 from 4
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:00.841 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:00.841 | Calling request vote to 1 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:00.841 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:00.841 | Calling request vote to 2 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:00.841 | Received request vote for 3 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:00.841 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:00.841 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:00.841 | Time spent as candidate for server 1 is 6.008294
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:00.841 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:00.841 | Calling request vote to 0 from 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:00.841 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:00.841 | Calling request vote to 2 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:00.842 | Received request vote for 3 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:00.842 | Received request vote for 3 on server 1
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:20:00.842 | Started as follower for server 1
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:20:00.842 | Timeout for server 1 is 8
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:00.842 | Received request vote for 1 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:00.842 | Received request vote for 1 on server 4
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:00.842 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:00.842 | Calling request vote to 3 from 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:01.836 | Time spent as follower 6.001206 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:01.841 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:01.841 | Calling request vote to 2 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:01.841 | Received request vote for 4 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:01.841 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:01.841 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:01.841 | Time spent as candidate for server 3 is 2.000527
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:01.841 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:01.841 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:01.841 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:01.841 | Calling request vote to 2 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:01.841 | Received request vote for 1 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:01.841 | Received request vote for 2 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:01.841 | Received request vote for 3 on server 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:01.842 | Time spent as follower 1.000079 for server 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:01.842 | Calling request vote to 4 from 2
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:01.842 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:01.842 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:01.842 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:02.837 | Time spent as follower 7.001347 for server 0
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:02.841 | Time spent as candidate for server 4 is 7.999323
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:20:02.841 | Time elapsed since one election without result for 4
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:20:02.841 | Candidate timeout for server 4 is 6
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:02.841 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:02.841 | Calling request vote to 0 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:02.841 | Received request vote for 3 on server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:02.842 | Time spent as follower 2.000180 for server 1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:02.842 | Time spent as candidate for server 2 is 4.001113
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:02.842 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:02.842 | Calling request vote to 0 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:02.842 | Received request vote for 2 on server 4
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:02.842 | Time spent as candidate for server 3 is 3.001818
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:02.842 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:02.842 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:02.843 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:02.843 | Calling request vote to 1 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:02.843 | Received request vote for 4 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:02.843 | Received request vote for 3 on server 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:03.837 | Time spent as follower 8.001489 for server 0
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:20:03.837 | Timeout completed as follower for 0. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:20:03.837 | Candidate timeout for server 0 is 8
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:03.837 | Inside request vote for 0
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.837 | Calling request vote to 1 from 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 4 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 1 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 1 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 1 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 1 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 1 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 1 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 1 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 2 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 2 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 2 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 2 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 2 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 2 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 2 on server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:03.837 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.837 | Calling request vote to 2 from 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:03.837 | Request vote to 2 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.837 | Calling request vote to 3 from 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 3 on server 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 0 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 0 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:03.837 | Received request vote for 0 on server 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.837 | Calling request vote to 4 from 0
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:03.837 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.838 | Calling request vote to 1 from 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.838 | Calling request vote to 3 from 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.838 | Calling request vote to 4 from 2
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:03.838 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.839 | Calling request vote to 2 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.839 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:03.839 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:03.842 | Time spent as follower 3.000308 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:03.843 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.843 | Calling request vote to 1 from 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.843 | Calling request vote to 2 from 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:03.843 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:03.843 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:04.838 | Time spent as candidate for server 0 is 1.000766
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:04.838 | Inside request vote for 0
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.838 | Calling request vote to 1 from 0
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.838 | Calling request vote to 3 from 0
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.838 | Calling request vote to 4 from 0
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:04.838 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:04.839 | Time spent as candidate for server 2 is 5.997950
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:20:04.839 | Time elapsed since one election without result for 2
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:20:04.839 | Candidate timeout for server 2 is 5
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:04.839 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.839 | Calling request vote to 0 from 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:04.839 | Time spent as candidate for server 3 is 4.999034
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:04.840 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.840 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.840 | Calling request vote to 1 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.840 | Calling request vote to 2 from 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.840 | Calling request vote to 4 from 3
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:04.840 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:04.842 | Time spent as follower 4.000440 for server 1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:04.843 | Time spent as candidate for server 4 is 2.002353
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:04.843 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:04.843 | Calling request vote to 0 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:04.845 | Received request vote for 2 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:04.845 | Received request vote for 4 on server 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:05.838 | Time spent as candidate for server 0 is 2.000873
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:05.838 | Inside request vote for 0
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:05.838 | Calling request vote to 1 from 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:05.838 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:05.838 | Calling request vote to 2 from 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:05.838 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:05.838 | Calling request vote to 2 from 0
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.838 | Received request vote for 2 on server 0
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:20:05.838 | Started as follower for server 0
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:20:05.838 | Timeout for server 0 is 8
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.838 | Received request vote for 0 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.838 | Received request vote for 0 on server 4
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:05.839 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:05.839 | Calling request vote to 1 from 2
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:05.840 | Time spent as candidate for server 3 is 5.999265
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:05.840 | Inside request vote for 3
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:05.840 | Calling request vote to 0 from 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:05.840 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:05.840 | Calling request vote to 1 from 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.840 | Received request vote for 0 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.840 | Received request vote for 2 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.840 | Received request vote for 3 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.840 | Received request vote for 3 on server 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.840 | Received request vote for 4 on server 3
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.840 | Received request vote for 3 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:05.840 | Received request vote for 3 on server 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:05.842 | Time spent as follower 5.000687 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:05.843 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:05.843 | Calling request vote to 1 from 4
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:06.838 | Time spent as follower 1.000039 for server 0
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:06.840 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:06.840 | Calling request vote to 3 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:06.840 | Received request vote for 2 on server 3
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:20:06.840 | Started as follower for server 3
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:20:06.840 | Timeout for server 3 is 6
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:06.842 | Time spent as follower 6.000875 for server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:06.844 | Request vote to 1 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:06.844 | Calling request vote to 2 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:06.844 | Received request vote for 4 on server 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:06.844 | Calling request vote to 3 from 4
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:06.844 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:07.838 | Time spent as follower 2.000158 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:07.841 | Time spent as follower 1.000269 for server 3
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:07.841 | Request vote to 3 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:07.841 | Calling request vote to 4 from 2
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:07.843 | Time spent as follower 7.001081 for server 1
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:07.844 | Time spent as candidate for server 4 is 5.003137
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:07.844 | Inside request vote for 4
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:07.844 | Calling request vote to 0 from 4
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:07.844 | Received request vote for 2 on server 4
+I [../src/deptran/raft/server.h:251] 2023-09-30 20:20:07.844 | Started as follower for server 4
+I [../src/deptran/raft/server.h:215] 2023-09-30 20:20:07.844 | Timeout for server 4 is 6
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:08.838 | Time spent as follower 3.000347 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:08.841 | Time spent as follower 2.000477 for server 3
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:08.843 | Time spent as follower 8.001237 for server 1
+I [../src/deptran/raft/server.h:244] 2023-09-30 20:20:08.843 | Timeout completed as follower for 1. Switching to candidate
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:20:08.843 | Candidate timeout for server 1 is 8
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:08.843 | Inside request vote for 1
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:08.843 | Calling request vote to 0 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.843 | Received request vote for 2 on server 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:08.843 | Request vote to 4 timed out
+I [../src/deptran/raft/server.h:164] 2023-09-30 20:20:08.843 | Got reply from all servers with total vote count 1 and max term -1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.843 | Received request vote for 2 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.843 | Received request vote for 2 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.843 | Received request vote for 4 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.843 | Received request vote for 4 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.843 | Received request vote for 4 on server 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:08.844 | Time spent as follower 1.000145 for server 4
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:08.845 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:08.845 | Calling request vote to 2 from 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:08.845 | Request vote to 2 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:08.845 | Calling request vote to 3 from 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.845 | Received request vote for 3 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.845 | Received request vote for 3 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.845 | Received request vote for 3 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.845 | Received request vote for 0 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.845 | Received request vote for 0 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.845 | Received request vote for 0 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.845 | Received request vote for 0 on server 1
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:08.845 | Received request vote for 0 on server 1
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:09.838 | Time spent as follower 4.000478 for server 0
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:09.841 | Time spent as follower 3.000659 for server 3
+I [../src/deptran/raft/server.h:207] 2023-09-30 20:20:09.843 | Time spent as candidate for server 2 is 5.004361
+I [../src/deptran/raft/server.h:209] 2023-09-30 20:20:09.843 | Time elapsed since one election without result for 2
+I [../src/deptran/raft/server.h:118] 2023-09-30 20:20:09.843 | Candidate timeout for server 2 is 5
+I [../src/deptran/raft/commo.cc:28] 2023-09-30 20:20:09.843 | Inside request vote for 2
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:09.843 | Calling request vote to 0 from 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:09.843 | Received request vote for 1 on server 2
+I [../src/deptran/raft/service.cc:32] 2023-09-30 20:20:09.843 | Received request vote for 1 on server 2
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:09.843 | Request vote to 0 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:09.843 | Calling request vote to 2 from 1
+  *** verify failed: 0 at ../src/rrr/reactor/event.cc, line 127
+  *** begin stack trace ***
+I [../src/deptran/raft/server.h:242] 2023-09-30 20:20:09.845 | Time spent as follower 2.000424 for server 4
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:09.845 | Request vote to 2 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:09.846 | Calling request vote to 3 from 1
+I [../src/deptran/raft/commo.cc:69] 2023-09-30 20:20:09.846 | Request vote to 3 timed out
+I [../src/deptran/raft/commo.cc:36] 2023-09-30 20:20:09.846 | Calling request vote to 4 from 1
+0    build/deptran_server(+0x13e210) [0xaaaad6477210]
+1    build/deptran_server(+0x14f640) [0xaaaad6488640]
+2    build/deptran_server(+0x15d860) [0xaaaad6496860]
+3    build/deptran_server(+0x15f05c) [0xaaaad649805c]
+4    build/deptran_server(+0x1668cc) [0xaaaad649f8cc]
+5    build/deptran_server(+0x159814) [0xaaaad6492814]
+6    build/deptran_server(+0x15cf78) [0xaaaad6495f78]
+7    /lib/aarch64-linux-gnu/libpthread.so.0(+0x7624) [0xffffaf6d2624]
+  ***  end stack trace  ***

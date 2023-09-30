@@ -14,17 +14,30 @@ class RaftCommo : public Communicator {
   RaftCommo() = delete;
   RaftCommo(PollMgr*);
 
-  void SendRequestVote(parid_t par_id,
-                       siteid_t site_id,
-                       uint64_t arg1,
-                       uint64_t arg2);
+  void SendRequestVote(
+                        parid_t par_id,
+                        uint64_t term,
+                        siteid_t candidateId,
+                        uint64_t lastLogIndex,
+                        uint64_t lastLogTerm,
+                        uint64_t *max_return_term,
+                        uint64_t *total_votes_granted);
+
+  void SendEmptyAppendEntries(
+                              parid_t par_id,
+                              uint64_t term,
+                              siteid_t candidateId,
+                              uint64_t *maxReturnTerm);
 
   void SendAppendEntries(parid_t par_id,
                          siteid_t site_id,
                          shared_ptr<Marshallable> cmd);
 
   shared_ptr<IntEvent> 
-  SendString(parid_t par_id, siteid_t site_id, const string& msg, string* res);
+  SendString( parid_t par_id, 
+              siteid_t site_id, 
+              const string& msg, 
+              string* res);
 
   /* Do not modify this class below here */
 
