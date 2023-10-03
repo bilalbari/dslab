@@ -29,65 +29,53 @@ void RaftServiceImpl::HandleRequestVote(const uint64_t& term,
                                         uint64_t* returnTerm,
                                         bool_t* vote_granted,
                                         rrr::DeferredReply* defer) {
-    Log_info("Received request vote for %lli on server %lli",candidateId,svr_->loc_id_);
-    svr_->mtx_.lock();
-    *vote_granted = false;
-    *returnTerm = svr_->currentTerm;
-    if(term > svr_->currentTerm)
-    {
-        svr_->mtx_.unlock();
-        Log_info("")
-        svr_->convertToFollower(term);
-    }
-    if(svr_->currentTerm == term)
-    {
-        if(svr_->votedFor == -1 || svr_->votedFor == candidateId)
-        {
-            Log_info("Vote granted to %lli",candidateId);
-            *vote_granted = true;
-            svr_->votedFor = candidateId;
-            svr_->lastStartTime = std::chrono::system_clock::now();
-        }
-    }
-    else
-    {
-        *vote_granted = false;
-    }
-    svr_->mtx_.unlock();
-    Log_info("Reply for request vote from %lli on server %lli completed",candidateId,svr_->loc_id_);
+    Log_info("Received request vote for %lli from server %lli",svr_->loc_id_,candidateId);
+    svr_->HandleRequestVote( term,
+                            candidateId,
+                            lastLogIndex,
+                            lastLogTerm,
+                            returnTerm,
+                            vote_granted);
+    Log_info("Back to request vote call for %lli from server %lli with vote as %d and returnTerm as %lli",svr_->loc_id_,candidateId,*vote_granted,*returnTerm);
     defer->reply();
 }
   
-void RaftServiceImpl::HandleEmptyAppendEntries(const uint64_t& term,
-                                            const siteid_t& leader_id,
+void RaftServiceImpl::HandleEmptyAppendEntries(
+                                            const uint64_t& term,
+                                            const siteid_t& candidateId,
                                             uint64_t* returnTerm,
                                             rrr::DeferredReply* defer) {
-    using namespace std::chrono;
-    svr_->mtx_.lock();
-    *returnTerm = svr_->currentTerm;
-    if(term > svr_->currentTerm)
-    {
-        svr_->mtx_.unlock();
-        svr_->convertToFollower(term);
-    }
-    else if(svr_->currentTerm == term)
-    {
-        if(svr_->state != "follower")
-        {
-            svr_->mtx_.unlock();
-            svr_->convertToFollower(term);
-        }
-    }
-    svr_->mtx_.unlock();
+    Log_info("Received empty append entries for %lli from %lli",svr_->loc_id_,candidateId);
+    svr_->HandleEmptyAppendEntries(
+                        term,
+                        candidateId,
+                        returnTerm
+                                    );
     defer->reply();
 } 
 
-void RaftServiceImpl::HandleAppendEntries(const MarshallDeputy& md_cmd,
-                                          bool_t *followerAppendOK,
-                                          rrr::DeferredReply* defer) {
-  
-  std::shared_ptr<Marshallable> cmd = const_cast<MarshallDeputy&>(md_cmd).sp_data_;
-  *followerAppendOK = false;
+void RaftServiceImpl::HandleAppendEntries(
+                                        const siteid_t& candidateId,
+                                        const uint64_t& prevLogIndex,
+                                        const uint64_t& prevLogTerm,
+                                        const uint64_t& term,
+                                        const MarshallDeputy& md_cmd,
+                                        const uint64_t& leaderCommitIndex,
+                                        uint64_t* returnTerm,
+                                        bool_t* followerAppendOK,
+                                        rrr::DeferredReply* defer) {
+  Log_info("Received Append entries from %lu to %lu",candidateId,svr_->loc_id_);
+  svr_->HandleAppendEntries(
+                        candidateId,
+                        prevLogIndex,
+                        prevLogTerm,
+                        term,
+                        md_cmd,
+                        leaderCommitIndex,
+                        returnTerm,
+                        followerAppendOK
+                    );
+  Log_info("Handled append entry from %lu to %lu successfully",candidateId,svr_->loc_id_);
   defer->reply();
 }
 

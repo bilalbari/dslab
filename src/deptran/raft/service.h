@@ -46,22 +46,29 @@ class RaftServiceImpl : public RaftService {
               const uint64_t&, lastLogTerm,
                     uint64_t*, returnTerm,
                     bool_t*, vote_granted) {
-    *returnTerm = -1;
+    *returnTerm = 0;
     *vote_granted = false;
   }
 
-  RpcHandler(AppendEntries, 2,
-             const MarshallDeputy&, cmd,
-             bool_t*, followerAppendOK) {
+  RpcHandler( AppendEntries, 8,
+              const siteid_t&, candidateId,
+              const uint64_t&, prevLogIndex,
+              const uint64_t&, prevLogTerm,
+              const uint64_t&, term,
+              const MarshallDeputy&, md_cmd,
+              const uint64_t&, leaderCommitIndex,
+              uint64_t*, returnTerm,
+              bool_t*, followerAppendOK) {
     *followerAppendOK = false;
+    *returnTerm = 0;
   }
 
   RpcHandler( EmptyAppendEntries, 3,
               const uint64_t&, term,
               const siteid_t&, candiateId,
               uint64_t*, returnTerm){
-    *returnTerm = -1;
-}
+    *returnTerm = 0;
+  }
 
   RpcHandler(HelloRpc, 2, const string&, req, string*, res) {
     *res = "error"; 
