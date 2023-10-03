@@ -1,5 +1,6 @@
 namespace janus;
 
+
 abstract service Raft {
   defer RequestVote(uint64_t term,
                     siteid_t candidateId,
@@ -8,8 +9,14 @@ abstract service Raft {
                     uint64_t returnTerm,
                     bool_t vote_granted);
 
-  defer AppendEntries(MarshallDeputy cmd |
-                      bool_t followerAppendOK);
+  defer AppendEntries(siteid_t candidateId,
+                    uint64_t prevLogIndex,
+                    uint64_t prevLogTerm,
+                    uint64_t term,
+                    MarshallDeputy cmd,
+                    uint64_t commitIndex |
+                    uint64_t returnTerm,
+                    bool_t followerAppendOK);
 
   defer EmptyAppendEntries( uint64_t term,
                             siteid_t candidateId |

@@ -374,21 +374,30 @@ int RaftLabTest::testInitialElection(void) {
   // Initial election does not need extra time 
   // Coroutine::Sleep(ELECTIONTIMEOUT);
   int leader = config_->OneLeader();
+  //Print("Got leader value as %d",leader);
+  //Print("Trying to assert one leader");
   AssertOneLeader(leader);
+  //Print("Assertion passed");
   // calculate RPC count for initial election for later use
   init_rpcs_ = 0;
   for (int i = 0; i < NSERVERS; i++) {
     init_rpcs_ += config_->RpcCount(i);
   }
+  //Print("Got total RPC");
   // Does everyone agree on the term number?
   uint64_t term = config_->OneTerm();
+  //Print("Checked if everybody has same term number, got %lu",term);
   Assert2(term != -1, "servers disagree on term number");
   // Sleep for a while
+  //Print("Starting coroutine for election timeout");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   // Does the term stay the same after a while if there's no failures?
+  //Print("Checking if everybody still has same term number");
   Assert2(config_->OneTerm() == term, "unexpected term change");
   // Is the same server still the only leader?
+  //Print("Checking if old leader is still leader");
   AssertOneLeader(config_->OneLeader(leader));
+  //Print("Checked, looks good");
   Passed2();
 }
 
