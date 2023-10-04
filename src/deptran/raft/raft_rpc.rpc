@@ -13,8 +13,8 @@ abstract service Raft {
                     uint64_t prevLogIndex,
                     uint64_t prevLogTerm,
                     uint64_t term,
-                    MarshallDeputy cmd,
-                    uint64_t commitIndex |
+                    uint64_t commitIndex,
+                    MarshallDeputy cmd |
                     uint64_t returnTerm,
                     bool_t followerAppendOK);
 
