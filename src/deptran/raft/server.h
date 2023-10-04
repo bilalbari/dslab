@@ -62,6 +62,7 @@ class RaftServer : public TxLogServer {
   public:
     void SyncRpcExample();
     void Disconnect(const bool disconnect = true);
+    void startConsensus();
     void Reconnect() {
       Disconnect(false);
     }
@@ -85,8 +86,8 @@ class RaftServer : public TxLogServer {
                       const uint64_t& prevLogIndex,
                       const uint64_t& prevLogTerm,
                       const uint64_t& term,
-                      const MarshallDeputy& md_cmd,
                       const uint64_t& leaderCommitIndex,
+                      const MarshallDeputy& md_cmd,
                       uint64_t* returnTerm,
                       bool_t* followerAppendOK
                       );

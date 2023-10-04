@@ -39,8 +39,8 @@ class RaftCommo : public Communicator {
                       uint64_t prevLogIndex,
                       uint64_t prevLogTerm,
                       uint64_t term,
-                      shared_ptr<Marshallable> cmd,
                       uint64_t commitIndex,
+                      shared_ptr<Marshallable> cmd,
                       uint64_t *returnTerm,
                       bool_t *followerAppendOK);
 

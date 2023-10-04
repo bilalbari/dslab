@@ -173,8 +173,8 @@ RaftCommo::SendAppendEntries(parid_t par_id,
                             uint64_t prevLogIndex,
                             uint64_t prevLogTerm,
                             uint64_t term,
-                            shared_ptr<Marshallable> cmd,
                             uint64_t commitIndex,
+                            shared_ptr<Marshallable> cmd,
                             uint64_t* returnTerm,
                             bool_t* followerAppendOK) {
   /*
@@ -184,7 +184,8 @@ RaftCommo::SendAppendEntries(parid_t par_id,
   auto proxies = rpc_par_proxies_[par_id];
   auto ev = Reactor::CreateSpEvent<IntEvent>();
   for (auto& p : proxies) {
-    if (p.first == site_id) {
+    if (p.first == site_id) 
+    {
       RaftProxy *proxy = (RaftProxy*) p.second;
       FutureAttr fuattr;
       fuattr.callback = [=](Future* fu) {
@@ -194,16 +195,21 @@ RaftCommo::SendAppendEntries(parid_t par_id,
       };
       /* wrap Marshallable in a MarshallDeputy to send over RPC */
       MarshallDeputy md(cmd);
-      Call_Async( proxy, 
+      Call_Async( 
+                  proxy, 
                   AppendEntries, 
                   candidateId,
                   prevLogIndex,
                   prevLogTerm,
                   term,
-                  md,
                   commitIndex,
-                  fuattr);
-
+                  md,
+                  fuattr
+                );
+      //Log_info("Just before event wait");
+      //Coroutine::Sleep(1000);
+      //ev->Wait(500000);
+      //Log_info("Just after event wait");
     }
   }
   return ev;

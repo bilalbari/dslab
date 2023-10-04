@@ -55,8 +55,8 @@ class RaftServiceImpl : public RaftService {
               const uint64_t&, prevLogIndex,
               const uint64_t&, prevLogTerm,
               const uint64_t&, term,
-              const MarshallDeputy&, md_cmd,
               const uint64_t&, leaderCommitIndex,
+              const MarshallDeputy&, md_cmd,
               uint64_t*, returnTerm,
               bool_t*, followerAppendOK) {
     *followerAppendOK = false;
