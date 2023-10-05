@@ -19,7 +19,8 @@ abstract service Raft {
                     bool_t followerAppendOK);
 
   defer EmptyAppendEntries( uint64_t term,
-                            siteid_t candidateId |
+                            siteid_t candidateId,
+                            uint64_t leaderCommitIndex |
                             uint64_t returnTerm);
 
   defer HelloRpc(string req | string res);                       

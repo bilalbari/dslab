@@ -62,7 +62,6 @@ class RaftServer : public TxLogServer {
   public:
     void SyncRpcExample();
     void Disconnect(const bool disconnect = true);
-    void startConsensus();
     void Reconnect() {
       Disconnect(false);
     }
@@ -70,6 +69,7 @@ class RaftServer : public TxLogServer {
     void HandleEmptyAppendEntries(
                               const uint64_t& term,
                               const siteid_t& candidateId,
+                              const uint64_t& leaderCommitIndex,
                               uint64_t* returnTerm);
     void convertToFollower(const uint64_t& term);
     void runFollowerTimeout();
@@ -93,6 +93,7 @@ class RaftServer : public TxLogServer {
                       );
     void becomeCandidate();
     bool IsDisconnected();
+    void startConsensus();
     bool checkMoreUpdated(uint64_t lastLogIndex,
                           uint64_t lastLogTerm);
 
