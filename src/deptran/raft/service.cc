@@ -29,26 +29,28 @@ void RaftServiceImpl::HandleRequestVote(const uint64_t& term,
                                         uint64_t* returnTerm,
                                         bool_t* vote_granted,
                                         rrr::DeferredReply* defer) {
-    Log_info("Received request vote for %lli from server %lli",svr_->loc_id_,candidateId);
+    Log_info("Server %lu -> Service block - Received request vote for %lu",svr_->loc_id_,candidateId);
     svr_->HandleRequestVote( term,
                             candidateId,
                             lastLogIndex,
                             lastLogTerm,
                             returnTerm,
                             vote_granted);
-    Log_info("Back to request vote call for %lli from server %lli with vote as %d and returnTerm as %lli",svr_->loc_id_,candidateId,*vote_granted,*returnTerm);
+    Log_info("Server %lu -> Service block - Back to request vote call for %lu with vote as %d and returnTerm as %lli",svr_->loc_id_,candidateId,*vote_granted,*returnTerm);
     defer->reply();
 }
   
 void RaftServiceImpl::HandleEmptyAppendEntries(
                                             const uint64_t& term,
                                             const siteid_t& candidateId,
+                                            const uint64_t& leaderCommitIndex,                
                                             uint64_t* returnTerm,
                                             rrr::DeferredReply* defer) {
-    Log_info("Received empty append entries for %lli from %lli",svr_->loc_id_,candidateId);
+    Log_info("Server %lu -> Received empty append entries for %lli",svr_->loc_id_,candidateId);
     svr_->HandleEmptyAppendEntries(
                         term,
                         candidateId,
+                        leaderCommitIndex,
                         returnTerm
                                     );
     defer->reply();
@@ -64,7 +66,7 @@ void RaftServiceImpl::HandleAppendEntries(
                                         uint64_t* returnTerm,
                                         bool_t* followerAppendOK,
                                         rrr::DeferredReply* defer) {
-  Log_info("Received Append entries from %lu to %lu",candidateId,svr_->loc_id_);
+  Log_info("Server %lu -> Received Append entries from %lu",svr_->loc_id_,candidateId);
   svr_->HandleAppendEntries(
                         candidateId,
                         prevLogIndex,
@@ -75,7 +77,7 @@ void RaftServiceImpl::HandleAppendEntries(
                         returnTerm,
                         followerAppendOK
                     );
-  Log_info("Handled append entry from %lu to %lu successfully",candidateId,svr_->loc_id_);
+  Log_info("Server %lu -> Handled append entry from %lu successfully",svr_->loc_id_,candidateId);
   defer->reply();
 }
 

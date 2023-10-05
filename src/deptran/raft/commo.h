@@ -29,6 +29,7 @@ class RaftCommo : public Communicator {
                           parid_t par_id,
                           uint64_t term,
                           siteid_t candidateId,
+                          uint64_t leaderCommitIndex,
                           uint64_t *maxReturnTerm);
 
   shared_ptr<IntEvent> 

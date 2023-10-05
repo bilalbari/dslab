@@ -51,3 +51,6 @@ profile-results/
 /results
 cmake-build*
 .cache*
+output.txt
+stdout.txt
+.vscode/*
