@@ -99,6 +99,7 @@ void Event::RecordPlace(const char* file, int line) {
 }
 
 bool Event::Test() {
+  
   verify(__debug_creator); // if this fails, the event is not created by reactor.
   if (IsReady()) {
     if (status_ == INIT) {

@@ -31,21 +31,13 @@ RaftCommo::SendRequestVote(
   Log_info("Server %lu -> Commo- Inside request vote",candidateId);
 
   auto proxies = rpc_par_proxies_[par_id];
-  //uint64_t temp_max_return_term = 0;
   uint64_t count = 0;
-  //uint64_t temp_total_votes_granted = 1;
-  //uint64_t *pointer_to_total_votes = &temp_total_votes_granted;
-  //uint64_t *pointer_to_max_return_term = &temp_max_return_term;
   uint64_t *pointer_to_count = &count;
   
-  //Log_info("Entering call loop for %lli",candidateId);
   auto ev_total = Reactor::CreateSpEvent<IntEvent>();
+  
   for (auto& p : proxies)
   {
-    //auto ev_individual = Reactor::CreateSpEvent<IntEvent>();
-    
-    //uint64_t *pointer_to_returnTerm = &returnTerm;
-    //bool_t *pointer_to_bool = &vote_granted;
     RaftProxy *proxy = (RaftProxy*) p.second;
     FutureAttr fuattr;
       
@@ -73,10 +65,8 @@ RaftCommo::SendRequestVote(
         {
           ev_total->Set(1);
         }
-        //Log_info("Processing RPC response for ")
       };
       
-      //Log_info("Just before async call for %lli to %lli",candidateId,p.first);
       Call_Async( 
                 proxy, 
                 RequestVote, 
@@ -86,32 +76,8 @@ RaftCommo::SendRequestVote(
                 lastLogTerm, 
                 fuattr
               );
-      //ev_individual -> Wait(10000);
     }
-    //if(ev_individual -> status_ == Event::TIMEOUT)
-    //{
-      //Log_info("Server %lu -> Commo - Request vote to %lli timed out",candidateId,p.first);
-    //}
-    // else
-    // {
-    //   Log_info("Server %lu -> Commo - Got response without timeout from %lli as %d as vote and %lli as return term",candidateId,p.first,vote_granted,returnTerm);
-    //   mutex_.lock();
-    //   count++;
-    //   if(vote_granted)
-    //   {
-    //     //Log_info("Positive vote got, increasing");
-    //     temp_total_votes_granted++;
-    //   }
-    //   temp_max_return_term = max(temp_max_return_term,returnTerm);
-    //   mutex_.unlock();
-    //   //Log_info("Updated values of temp total votes and temp index is %lli and %lli",temp_total_votes_granted,temp_max_return_term);
-    // }
   }
-  //*max_return_term = temp_max_return_term;
-  //*total_votes_granted = temp_total_votes_granted;
-  // if(count)
-  //   ev_total -> Set(1);
-  // Log_info("Server %lu -> Commo - Total votes granted are %lu and max return term is %lu",candidateId,*total_votes_granted,*max_return_term);
   return ev_total;
 }
 
@@ -132,13 +98,10 @@ RaftCommo::SendEmptyAppendEntries(
   auto proxies = rpc_par_proxies_[par_id];
   uint64_t count = 0;
   uint64_t *pointerToCount = &count;
-  //Log_info("Server %lu -> Commo - Empty append entry - Before initialising global ev",candidateId);
   auto ev_global = Reactor::CreateSpEvent<IntEvent>();
-  //Log_info("Server %lu -> Before initialising global ev",candidateId);
+  
   for(auto& p : proxies)
   {
-    //Log_info("Server %lu -> Commo - Empty append entry - Before initialising individual ev");
-    //Log_info("Server %lu -> Before initialising global ev");
     RaftProxy *proxy = (RaftProxy*) p.second;
     FutureAttr fuattr;
     if(p.first != candidateId)
@@ -168,19 +131,6 @@ RaftCommo::SendEmptyAppendEntries(
                   fuattr
                 );
     }
-    // ev_individual -> Wait(10000);
-    // if(ev_individual -> status_ == Event::TIMEOUT)
-    // {
-    //   Log_info("Server %lu -> Commo - Empty append entry to %lli failed",loc_id_,p.first);
-    // }
-    // else
-    // {
-    //   mutex_.lock();
-    //   count++;
-    //   Log_info("Server %lu -> Commo - Got back %lli as return term from %lli",loc_id_,returnTerm,p.first);
-    //   max_return_term = max(max_return_term,returnTerm);
-    //   mutex_.unlock();
-    // }
   }
   return ev_global;
 }
@@ -227,19 +177,9 @@ RaftCommo::SendAppendEntries(parid_t par_id,
                   md,
                   fuattr
                 );
-      // ev->Wait(100000);
-      // if(ev->status_ == Event::TIMEOUT)
-      // {
-      //   Log_info("Server %lu -> Append entry call to %lu timed out",loc_id_,p.first);
-      // }
-      // else
-      // {
-      //   Log_info("Server %lu -> Append entry call succeeded");
-      // }
     }
   }
   return ev;
-  //Log_info("Server %lu -> Async call sent, returning ev",candidateId); 
 }
 
 shared_ptr<IntEvent> 

@@ -11,6 +11,7 @@ namespace janus {
 RaftServer::RaftServer(Frame * frame) {
   frame_ = frame ;
   mtx_.lock();
+
   currentTerm = 1;
   votedFor = 6;
   state = "follower";
@@ -19,19 +20,13 @@ RaftServer::RaftServer(Frame * frame) {
   Marshallable* m = new CmdData();
   std::shared_ptr<Marshallable> my_shared(m);
   stateLog.push_back(LogEntry(my_shared,0));
-  //app_next_(*my_shared);
   commitIndex = 0;
   lastApplied = 0;
-  //lastApplied = 0;
   nextIndex = vector<int>{1,1,1,1,1};
   matchIndex = vector<int>{0,0,0,0,0};
 
   mtx_.unlock();
   Log_info("Server initialization completed for %lli",loc_id_);
-  /* Your code here for server initialization. Note that this function is 
-     called in a different OS thread. Be careful about thread safety if 
-     you want to initialize variables here. */
-
 }
 
 RaftServer::~RaftServer() {
@@ -40,8 +35,6 @@ RaftServer::~RaftServer() {
 }
 
 int RaftServer::generateElectionTimeout(){
-    // Selecting timeout bw 500ms to 1s as recommended by
-    // professor
     srand(loc_id_);
     return 300+(rand()%500);
 }
@@ -99,6 +92,7 @@ void RaftServer::convertToFollower(const uint64_t& term){
   Log_info("Starting as follower for server %lli",loc_id_);
 
   mtx_.lock();
+  
   votedFor = 6;
   lastStartTime = std::chrono::system_clock::now();
   currentTerm = term;
@@ -106,7 +100,7 @@ void RaftServer::convertToFollower(const uint64_t& term){
   mtx_.unlock();
 
   runFollowerTimeout();
-  //Log_info("Ran the follower timeout on a coroutine for %lli",loc_id_);
+
 }
 
 void RaftServer::runFollowerTimeout(){
@@ -135,23 +129,12 @@ void RaftServer::runFollowerTimeout(){
     mtx_.unlock();
   }
 
-    //Log_info("Server %lu -> Inside runFollowerTimeout after coroutine sleep",loc_id_);
-  //}
   mtx_.lock();
-  //time_spent = chrono::system_clock::now() - lastStartTime;
-  //if(time_spent.count() > electionTimeout)
-  
+
   Log_info("Server %lu ->Timeout completed as follower. Switching to candidate",loc_id_);
   state = "candidate";
-  //}
+
   mtx_.unlock();
-  //Log_info("Server %lu ->Timeout completed as follower. Switching to candidate",loc_id_);
-  
-  /* 
-    Election timeout finished as a follower
-    Changing to candidate
-  */
-  //becomeCandidate();
 }
 
 
@@ -175,145 +158,124 @@ void RaftServer::becomeCandidate()
   mtx_.lock();
   state = "candidate";
   currentTerm++;
-  //Log_info("Server %lli  started as candidate with term %lli",loc_id_,currentTerm);
   lastStartTime = chrono::system_clock::now();
   votedFor = loc_id_;
   chrono::duration<double,milli> time_spent = 
                   chrono::system_clock::now() - lastStartTime;
   mtx_.unlock();
 
-  //while(time_spent < endTimeout)
-  //{
-    auto ev = Reactor::CreateSpEvent<IntEvent>();
-    Log_info("Server %lu -> Inside become candidate, going for request vote",loc_id_);
-    Coroutine::CreateRun([=](){
+  auto ev = Reactor::CreateSpEvent<IntEvent>();
+  Log_info("Server %lu -> Inside become candidate, going for request vote",loc_id_);
+  Coroutine::CreateRun([=](){
 
-      uint64_t max_return_term=0;
-      uint64_t total_votes_received=1;
+    uint64_t max_return_term=0;
+    uint64_t total_votes_received=1;
 
-      mtx_.lock();
-      uint64_t tempCurrentTerm = currentTerm;
-      uint64_t tempLastLogIndex = stateLog.size()-1;
-      uint64_t tempLastLogTerm = stateLog[tempLastLogIndex].term;
-      mtx_.unlock();
-
-      Log_info("Server %lu -> Inside become candidate, before sending request vote",loc_id_);
-      auto event = commo()->SendRequestVote(
-                              0,
-                              tempCurrentTerm, // sending my term
-                              loc_id_,  //sending my id
-                              tempLastLogIndex, //my last log index
-                              tempLastLogTerm, // my last log term
-                              &max_return_term,
-                              &total_votes_received
-                            );
-      Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
-      event->Wait(15000);
-      Log_info("Server %lu -> Inside become candidate, after send request vote after wait",loc_id_);                      
-      if(event->status_ == Event::TIMEOUT)
-      {
-        Log_info("Server %lu -> Timeout happened for all send request votes",loc_id_);
-      }
-      else
-      {
-        
-        Log_info("Server %lu -> Got reply from all servers with total vote count %d and max term %lu",loc_id_,total_votes_received,max_return_term);
-        
-        mtx_.lock();
-        
-        if(state != "candidate")
-        {
-          Log_info("Server %lu -> Changed state to %s while waiting for votes",loc_id_,state.c_str());
-          if(state == "Leader")
-          {
-            matchIndex = vector<int>(5,0);
-            nextIndex = vector<int>(5,stateLog.size());
-          }
-          mtx_.unlock();
-          return;
-        }
-        if(max_return_term != 0)
-        { 
-        
-          /*
-            Checking for the return term
-            and breaking in case it is more than current
-            term
-          */
-          Log_info("Server %lu -> Max return term is not zero",loc_id_);
-          if(max_return_term > currentTerm)
-          {
-            Log_info("Server %lu -> Received bigger term after requestVote. Current term is %lu and got %lu",loc_id_,currentTerm,max_return_term);
-            
-            state = "follower";
-            currentTerm = max_return_term;
-            mtx_.unlock();
-            return;               
-          }
-          if(max_return_term <= currentTerm)
-          {
-            /*
-            Checking for majority of votes received
-            and changing to a leader in case that happens
-            */
-            if(total_votes_received >= (commo()->rpc_par_proxies_[0].size()+1)/2)
-            {
-              Log_info("Server %lu -> Election supremacy. Won election",loc_id_);
-              state = "leader";
-              mtx_.unlock();
-              //return;
-            }
-            else
-            {
-              Log_info("Server %lu -> Did not received majority votes",loc_id_);
-            }
-          }
-        }
-        mtx_.unlock();
-        
-      }
-      {
-        std::lock_guard<std::recursive_mutex> guard(mtx_);
-        //ev->Set(0);
-        Log_info("Server %lu -> Calling set on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
-        ev->Set(1);
-      }
-    });
-
-    //Log_info("Server %lu -> Inside becomeCandidate before coroutine sleep",loc_id_);
-    Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
-    ev->Wait(30000);
-    Log_info("Server %lu -> Inside becomeCandidate after coroutine sleep",loc_id_);
-    
     mtx_.lock();
+    uint64_t tempCurrentTerm = currentTerm;
+    uint64_t tempLastLogIndex = stateLog.size()-1;
+    uint64_t tempLastLogTerm = stateLog[tempLastLogIndex].term;
+    mtx_.unlock();
 
-    if(state != "candidate") 
+    Log_info("Server %lu -> Inside become candidate, before sending request vote",loc_id_);
+    auto event = commo()->SendRequestVote(
+                            0,
+                            tempCurrentTerm, // sending my term
+                            loc_id_,  //sending my id
+                            tempLastLogIndex, //my last log index
+                            tempLastLogTerm, // my last log term
+                            &max_return_term,
+                            &total_votes_received
+                          );
+    Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
+    event->Wait(15000);
+    Log_info("Server %lu -> Inside become candidate, after send request vote after wait",loc_id_);                      
+    if(event->status_ == Event::TIMEOUT)
     {
-      mtx_.unlock();
-      return;
+      Log_info("Server %lu -> Timeout happened for all send request votes",loc_id_);
     }
     else
     {
-      time_spent = chrono::system_clock::now() - lastStartTime;
+      
+      Log_info("Server %lu -> Got reply from all servers with total vote count %d and max term %lu",loc_id_,total_votes_received,max_return_term);
+      
+      mtx_.lock();
+      
+      if(state != "candidate")
+      {
+        Log_info("Server %lu -> Changed state to %s while waiting for votes",loc_id_,state.c_str());
+        if(state == "Leader")
+        {
+          matchIndex = vector<int>(5,0);
+          nextIndex = vector<int>(5,stateLog.size());
+        }
+        mtx_.unlock();
+        return;
+      }
+      if(max_return_term != 0)
+      { 
+      
+        /*
+          Checking for the return term
+          and breaking in case it is more than current
+          term
+        */
+        Log_info("Server %lu -> Max return term is not zero",loc_id_);
+        if(max_return_term > currentTerm)
+        {
+          Log_info("Server %lu -> Received bigger term after requestVote. Current term is %lu and got %lu",loc_id_,currentTerm,max_return_term);
+          
+          state = "follower";
+          currentTerm = max_return_term;
+          mtx_.unlock();
+          return;               
+        }
+        if(max_return_term <= currentTerm)
+        {
+          /*
+          Checking for majority of votes received
+          and changing to a leader in case that happens
+          */
+          if(total_votes_received >= (commo()->rpc_par_proxies_[0].size()+1)/2)
+          {
+            Log_info("Server %lu -> Election supremacy. Won election",loc_id_);
+            state = "leader";
+            mtx_.unlock();
+          }
+          else
+          {
+            Log_info("Server %lu -> Did not received majority votes",loc_id_);
+          }
+        }
+      }
       mtx_.unlock();
-      //if((endTimeout-time_spent).count() > 20)
-      //{
-        //Log_info("Server %lu -> Will send votes after 20 miliseconds");
-        //Coroutine::Sleep(50000);
-      //}
-      //else
-      //{
-      Log_info("Server %lu -> Will send votes after %f",loc_id_,(endTimeout-time_spent).count());
-      Coroutine::Sleep((endTimeout-time_spent).count()*1000);
-      //}
+      
     }
-    /*
-      Updating time diff
-    */
-    
-  //}
-  //Log_info("Time elapsed since one election without result for %lli",loc_id_);
-  //becomeCandidate();
+    {
+      std::lock_guard<std::recursive_mutex> guard(mtx_);
+      Log_info("Server %lu -> Calling set on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
+      ev->Set(1);
+    }
+  });
+
+  Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
+  ev->Wait(30000);
+  Log_info("Server %lu -> Inside becomeCandidate after coroutine sleep",loc_id_);
+  
+  mtx_.lock();
+
+  if(state != "candidate") 
+  {
+    mtx_.unlock();
+    return;
+  }
+  else
+  {
+    time_spent = chrono::system_clock::now() - lastStartTime;
+    mtx_.unlock();
+    Log_info("Server %lu -> Will send votes after %f",loc_id_,(endTimeout-time_spent).count());
+    Coroutine::Sleep((endTimeout-time_spent).count()*1000);
+  }
 }
 
 void RaftServer::HandleAppendEntries(
@@ -337,24 +299,6 @@ void RaftServer::HandleAppendEntries(
     *followerAppendOK = false;
     return;
   }
-  // if(prevLogIndex==0)
-  // {
-  //   Log_info("Server %lu -> Received entries from starting from %lu",loc_id_,candidateId);
-  //   stateLog = vector<LogEntry>();
-  //   stateLog.push_back(LogEntry(cmd,term));
-  //   uint64_t temp_size = (int)stateLog.size();
-  //   *followerAppendOK = true;
-  //   if(leaderCommitIndex > commitIndex)
-  //   {
-  //     // Log_info("LeaderCommit index is greater,current commit index %lu",commitIndex);
-  //     // if(temp_size < leaderCommitIndex)
-  //     //   commitIndex = temp_size;
-  //     // else
-  //     //   commitIndex = leaderCommitIndex;
-  //     commitIndex = min(leaderCommitIndex, stateLog.size());
-  //   }
-  //   Log_info("Server %lu -> Commit index value is %lld",commitIndex);
-  // }
   if(stateLog.size() >= prevLogIndex)
   {
     if(stateLog[prevLogIndex].term != prevLogTerm)
