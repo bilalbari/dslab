@@ -141,7 +141,7 @@ RaftCommo::SendEmptyAppendEntries(
     //Log_info("Server %lu -> Before initialising global ev");
     RaftProxy *proxy = (RaftProxy*) p.second;
     FutureAttr fuattr;
-    if(p.first != candidateId) 
+    if(p.first != candidateId)
     {
       Log_info("Server %lu -> Commo - Sending empty append entry to %lli",loc_id_,p.first);
       fuattr.callback = [=](Future* fu) 

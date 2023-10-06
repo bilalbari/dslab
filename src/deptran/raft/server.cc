@@ -43,7 +43,7 @@ int RaftServer::generateElectionTimeout(){
     // Selecting timeout bw 500ms to 1s as recommended by
     // professor
     srand(loc_id_);
-    return 150+(rand()%150);
+    return 300+(rand()%500);
 }
 
 void RaftServer::HandleEmptyAppendEntries(
@@ -189,7 +189,7 @@ void RaftServer::becomeCandidate()
     Coroutine::CreateRun([=](){
 
       uint64_t max_return_term=0;
-      uint64_t total_votes_received=0;
+      uint64_t total_votes_received=1;
 
       mtx_.lock();
       uint64_t tempCurrentTerm = currentTerm;
@@ -208,7 +208,7 @@ void RaftServer::becomeCandidate()
                               &total_votes_received
                             );
       Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
-      event->Wait(5000);
+      event->Wait(15000);
       Log_info("Server %lu -> Inside become candidate, after send request vote after wait",loc_id_);                      
       if(event->status_ == Event::TIMEOUT)
       {
@@ -282,7 +282,7 @@ void RaftServer::becomeCandidate()
 
     //Log_info("Server %lu -> Inside becomeCandidate before coroutine sleep",loc_id_);
     Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
-    ev->Wait(20000);
+    ev->Wait(30000);
     Log_info("Server %lu -> Inside becomeCandidate after coroutine sleep",loc_id_);
     
     mtx_.lock();
@@ -296,8 +296,16 @@ void RaftServer::becomeCandidate()
     {
       time_spent = chrono::system_clock::now() - lastStartTime;
       mtx_.unlock();
+      //if((endTimeout-time_spent).count() > 20)
+      //{
+        //Log_info("Server %lu -> Will send votes after 20 miliseconds");
+        //Coroutine::Sleep(50000);
+      //}
+      //else
+      //{
       Log_info("Server %lu -> Will send votes after %f",loc_id_,(endTimeout-time_spent).count());
       Coroutine::Sleep((endTimeout-time_spent).count()*1000);
+      //}
     }
     /*
       Updating time diff
@@ -481,7 +489,7 @@ void RaftServer::becomeLeader()
                                     &returned_max_term
                                     );
         Log_info("Server %lu -> Inside leader, inside coroutine, after send empty append entry, before wait",loc_id_);
-        event->Wait(5000);
+        event->Wait(15000);
         Log_info("Server %lu -> Inside leader, inside coroutine, after send empty append entry, after wait",loc_id_);
         if(event->status_ == Event::TIMEOUT)
         {
@@ -511,7 +519,7 @@ void RaftServer::becomeLeader()
     //Log_info("Server %lu -> Inside leader before event sleep 1",loc_id_);
     //check=true;
     Log_info("Server %lu -> Calling wait on ev inside empty append entry %p",loc_id_,ev.get());
-    ev->Wait(20000);
+    ev->Wait(30000);
       // if(ev_global->status_ == Event::TIMEOUT)
       // {
       //   Log_info("Send empty append entry")
