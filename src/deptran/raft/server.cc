@@ -123,20 +123,30 @@ void RaftServer::runFollowerTimeout(){
   while(time_spent < endTimeout)
   {
       
+    Log_info("Server %lu -> Inside runFollowerTimeout before coroutine sleep",loc_id_);
+    Coroutine::Sleep(electionTimeout*1000);
     mtx_.lock();
+    if(state != "follower")
+    {
+      mtx_.unlock();
+      break;
+    }
     time_spent = chrono::system_clock::now() - lastStartTime;
     mtx_.unlock();
-    Log_info("Server %lu -> Inside runFollowerTimeout before coroutine sleep",loc_id_);
-    Coroutine::Sleep(20000);
-    Log_info("Server %lu -> Inside runFollowerTimeout after coroutine sleep",loc_id_);
   }
 
-
-  Log_info("Server %lu ->Timeout completed as follower. Switching to candidate",loc_id_);
+    //Log_info("Server %lu -> Inside runFollowerTimeout after coroutine sleep",loc_id_);
+  //}
   mtx_.lock();
+  //time_spent = chrono::system_clock::now() - lastStartTime;
+  //if(time_spent.count() > electionTimeout)
+  
+  Log_info("Server %lu ->Timeout completed as follower. Switching to candidate",loc_id_);
   state = "candidate";
+  //}
   mtx_.unlock();
-
+  //Log_info("Server %lu ->Timeout completed as follower. Switching to candidate",loc_id_);
+  
   /* 
     Election timeout finished as a follower
     Changing to candidate
@@ -155,7 +165,7 @@ void RaftServer::becomeCandidate()
   int electionTimeout = generateElectionTimeout();
   
   chrono::milliseconds endTimeout(electionTimeout);
-  Log_info("Server -> Candidate timeout is %d",loc_id_,electionTimeout);
+  Log_info("Server %lu-> Candidate timeout is %i ",loc_id_,electionTimeout);
   
   /*
     Locking the mutex to get state variables
@@ -172,10 +182,10 @@ void RaftServer::becomeCandidate()
                   chrono::system_clock::now() - lastStartTime;
   mtx_.unlock();
 
-  while(time_spent < endTimeout)
-  {
-    
-    Log_info("Server %lu -> Inside become candidate, before coroutine for request vote",loc_id_);
+  //while(time_spent < endTimeout)
+  //{
+    auto ev = Reactor::CreateSpEvent<IntEvent>();
+    Log_info("Server %lu -> Inside become candidate, going for request vote",loc_id_);
     Coroutine::CreateRun([=](){
 
       uint64_t max_return_term=0;
@@ -183,8 +193,8 @@ void RaftServer::becomeCandidate()
 
       mtx_.lock();
       uint64_t tempCurrentTerm = currentTerm;
-      uint64_t tempLastLogIndex = stateLog.size();
-      uint64_t tempLastLogTerm = stateLog.size()==0?0:stateLog[tempLastLogIndex-1].term;
+      uint64_t tempLastLogIndex = stateLog.size()-1;
+      uint64_t tempLastLogTerm = stateLog[tempLastLogIndex].term;
       mtx_.unlock();
 
       Log_info("Server %lu -> Inside become candidate, before sending request vote",loc_id_);
@@ -198,7 +208,7 @@ void RaftServer::becomeCandidate()
                               &total_votes_received
                             );
       Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
-      event->Wait(10000);
+      event->Wait(5000);
       Log_info("Server %lu -> Inside become candidate, after send request vote after wait",loc_id_);                      
       if(event->status_ == Event::TIMEOUT)
       {
@@ -214,6 +224,11 @@ void RaftServer::becomeCandidate()
         if(state != "candidate")
         {
           Log_info("Server %lu -> Changed state to %s while waiting for votes",loc_id_,state.c_str());
+          if(state == "Leader")
+          {
+            matchIndex = vector<int>(5,0);
+            nextIndex = vector<int>(5,stateLog.size());
+          }
           mtx_.unlock();
           return;
         }
@@ -246,7 +261,7 @@ void RaftServer::becomeCandidate()
               Log_info("Server %lu -> Election supremacy. Won election",loc_id_);
               state = "leader";
               mtx_.unlock();
-              return;
+              //return;
             }
             else
             {
@@ -255,29 +270,41 @@ void RaftServer::becomeCandidate()
           }
         }
         mtx_.unlock();
+        
+      }
+      {
+        std::lock_guard<std::recursive_mutex> guard(mtx_);
+        //ev->Set(0);
+        Log_info("Server %lu -> Calling set on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
+        ev->Set(1);
       }
     });
 
-    Log_info("Server %lu -> Inside becomeCandidate before coroutine sleep",loc_id_);
-    Coroutine::Sleep(20000);
+    //Log_info("Server %lu -> Inside becomeCandidate before coroutine sleep",loc_id_);
+    Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
+    ev->Wait(20000);
     Log_info("Server %lu -> Inside becomeCandidate after coroutine sleep",loc_id_);
+    
     mtx_.lock();
 
     if(state != "candidate") 
     {
       mtx_.unlock();
-
       return;
     }
-
-    mtx_.unlock();
+    else
+    {
+      time_spent = chrono::system_clock::now() - lastStartTime;
+      mtx_.unlock();
+      Log_info("Server %lu -> Will send votes after %f",loc_id_,(endTimeout-time_spent).count());
+      Coroutine::Sleep((endTimeout-time_spent).count()*1000);
+    }
     /*
       Updating time diff
     */
-    time_spent = chrono::system_clock::now() - lastStartTime;
-    Log_info("Server %lu -> Time spent as candidate is %f",loc_id_,time_spent.count());
-  }
-  Log_info("Time elapsed since one election without result for %lli",loc_id_);
+    
+  //}
+  //Log_info("Time elapsed since one election without result for %lli",loc_id_);
   //becomeCandidate();
 }
 
@@ -388,7 +415,7 @@ void RaftServer::HandleRequestVote(
     Log_info("Server %lu -> Current term is less than request vote term, becoming follower",loc_id_);
   }
 
-  if(currentTerm == term)
+  if(currentTerm <= term)
   {
     if(votedFor == 6 || votedFor == candidateId)
     {
@@ -429,20 +456,19 @@ void RaftServer::becomeLeader()
   chrono::time_point<chrono::system_clock> last_heartbeat_time = chrono::system_clock::now();
   chrono::duration<double,milli> time_since_heartbeat;
   
-  while(true)
-  {
-    uint64_t returned_max_term = 0;
-    bool check = false;
+  //while(true)
+  //{
+    //uint64_t returned_max_term = 0;
+    //bool check = false;
     mtx_.lock();
     uint64_t temp_term = currentTerm;
-    time_since_heartbeat = chrono::system_clock::now() - last_heartbeat_time;
     mtx_.unlock();
 
-    if(c==0 || time_since_heartbeat.count() > 100)
-    {
+    //if(c==0 || time_since_heartbeat.count() > 100)
+    //{
       
       last_heartbeat_time = chrono::system_clock::now();
-      
+      auto ev = Reactor::CreateSpEvent<IntEvent>();
       Coroutine::CreateRun([=](){
 
         uint64_t returned_max_term = 0;
@@ -455,11 +481,11 @@ void RaftServer::becomeLeader()
                                     &returned_max_term
                                     );
         Log_info("Server %lu -> Inside leader, inside coroutine, after send empty append entry, before wait",loc_id_);
-        event->Wait(25000);
+        event->Wait(5000);
         Log_info("Server %lu -> Inside leader, inside coroutine, after send empty append entry, after wait",loc_id_);
         if(event->status_ == Event::TIMEOUT)
         {
-          Log_info("Server %lu -> Timeout happened for all heartbeats");
+          Log_info("Server %lu -> Timeout happened for all heartbeats",loc_id_);
         }
         else
         {
@@ -473,12 +499,19 @@ void RaftServer::becomeLeader()
             mtx_.unlock();
           }
         }
+        {
+          std::lock_guard<std::recursive_mutex> guard(mtx_);
+          Log_info("Server %lu -> Calling set on ev inside empty append entry %p",loc_id_,ev.get());
+          //ev->Set(0);
+          ev->Set(1);
+        }
       });
-      c=1;
-    }
-    Log_info("Server %lu -> Inside leader before event sleep 1",loc_id_);
-    check=true;
-    Coroutine::Sleep(20000);
+      //c=1;
+    //}
+    //Log_info("Server %lu -> Inside leader before event sleep 1",loc_id_);
+    //check=true;
+    Log_info("Server %lu -> Calling wait on ev inside empty append entry %p",loc_id_,ev.get());
+    ev->Wait(20000);
       // if(ev_global->status_ == Event::TIMEOUT)
       // {
       //   Log_info("Send empty append entry")
@@ -502,7 +535,8 @@ void RaftServer::becomeLeader()
         check_is_replicated = true;
       }
     }
-    if(commitIndex < (stateLog.size()-1) || !check_is_replicated)
+    auto ev_concensus = Reactor::CreateSpEvent<IntEvent>();
+    if(!check_is_replicated)
     {
       Log_info("Server %lu -> As leader, found commitIndex behind. Trying to replicate",loc_id_);
       mtx_.unlock();
@@ -511,25 +545,28 @@ void RaftServer::becomeLeader()
         startConsensus();
         Log_info("Server %lu -> Inside leader inside coroutine after concensus",loc_id_);
       });
-      check = true;
+      //check = true;
     }
     mtx_.unlock();
+    ev_concensus->Wait(50000);
     // if(check == false)
     // {
     //   Log_info("Server %lu -> Calling coroutine sleep",loc_id_);
     //   Coroutine::Sleep(5000);
     // }
     Log_info("Server %lu -> Inside leader after concensus before coroutine sleep 2",loc_id_);
-    Coroutine::Sleep(100000);
+    time_since_heartbeat = chrono::system_clock::now() - last_heartbeat_time;
+    if((100-time_since_heartbeat.count())>0)
+      Coroutine::Sleep((100-time_since_heartbeat.count())*1000);
     Log_info("Server %lu -> Inside leader after consensus after coroutine sleep 2",loc_id_);
-  }
+  //}
 }
 
 void RaftServer::startConsensus(){
 
   Log_info("Server %lu -> Starting concensus, trying to take a lock",loc_id_);
 
-  //std::lock_guard<std::recursive_mutex> guard(mtx_);
+  std::lock_guard<std::recursive_mutex> guard(mtx_);
   
   Log_info("Server %lu -> Am the leader. Starting concensus with current leaderCommitIndex %lu",loc_id_,commitIndex);
   
@@ -540,9 +577,10 @@ void RaftServer::startConsensus(){
     if(proxies[i].first != loc_id_)
     {
       Log_info("Server %lu -> Just before entering outer coroutine for sending entries",loc_id_);
-      mtx_.lock();
-      mtx_.unlock();
+      //mtx_.lock();
+      //mtx_.unlock();
       auto ev_global = Reactor::CreateSpEvent<IntEvent>();
+      Log_info("Server %lu -> Initialised smart pointer global ev as %p",loc_id_,ev_global.get());
       Coroutine::CreateRun([this,i,proxies,ev_global]
       {
         Log_info("Server %lu -> Entered coroutine block for sending append entries with current nextIndex %d and matchIndex %d",loc_id_,nextIndex[i],matchIndex[i]);
@@ -569,7 +607,7 @@ void RaftServer::startConsensus(){
                                     &returnTerm,
                                     &followerAppendOK
                                   );
-            Coroutine::Sleep(1000);
+            //Coroutine::Sleep(1000);
             event->Wait(10000);
             //Log_info("Server %lu -> Inside start consensus before calling individual wait",loc_id_);                        
             
@@ -618,10 +656,16 @@ void RaftServer::startConsensus(){
           Log_info("Server %lu -> Inside consensus outside inner coroutine after calling sleep",loc_id_);                        
         }
         mtx_.unlock();
-        ev_global->Set(1);
+        {
+          std::lock_guard<std::recursive_mutex> guard(mtx_);
+          Log_info("Server %lu -> Setting smart pointer global ev %p",loc_id_,ev_global.get());
+          //ev_global->Set(0);
+          ev_global->Set(1);
+        }
       });
       Log_info("Server %lu -> Inside consensus outside outer coroutine before calling global wait",loc_id_);                        
-      Coroutine::Sleep(1000);
+      //Coroutine::Sleep(10000);
+      Log_info("Server %lu -> Calling wait on smart pointer ev_global %p",ev_global.get());
       ev_global->Wait(100000);
       Log_info("Server %lu -> Inside consensus outside outer coroutine after calling global wait",loc_id_);                        
       if(ev_global->status_ == Event::TIMEOUT)
@@ -680,38 +724,41 @@ void RaftServer::startConsensus(){
 void RaftServer::Setup() {
   
   
-  
-  while(true)
-  {
-    Log_info("Server %lu -> Inside setup starting",loc_id_);
-    mtx_.lock();
-    if(state == "follower")
+  Log_info("Server %lu -> Calling setup",loc_id_);
+  Coroutine::CreateRun([this](){
+    while(true)
     {
-      uint64_t temp_term = currentTerm;
+      Log_info("Server %lu -> Inside setup starting",loc_id_);
+      mtx_.lock();
+      if(state == "follower")
+      {
+        uint64_t temp_term = currentTerm;
+        mtx_.unlock();
+        Log_info("Server %lu ->Calling convert to follower",loc_id_);
+        convertToFollower(temp_term);
+        Log_info("Server %lu ->After convert to follower",loc_id_);
+      }
+      if(state == "candidate")
+      {
+        mtx_.unlock();
+        Log_info("Server %lu ->Calling become candidate",loc_id_);
+        becomeCandidate();
+        Log_info("Server %lu ->After become candidate",loc_id_);
+      }
+      if(state == "leader")
+      {
+        mtx_.unlock();
+        Log_info("Server %lu ->Calling become leader",loc_id_);
+        becomeLeader();
+        Log_info("Server %lu ->After leader",loc_id_);
+      }
       mtx_.unlock();
-      Log_info("Server %lu ->Calling convert to follower",loc_id_);
-      convertToFollower(temp_term);
-      Log_info("Server %lu ->After convert to follower",loc_id_);
+      //Log_info("Server %lu -> Inside setup before couroutine sleep",loc_id_);
+      //Coroutine::Sleep(5000);
+      //Log_info("Server %lu -> Inside setup after couroutine sleep",loc_id_);
     }
-    if(state == "candidate")
-    {
-      mtx_.unlock();
-      Log_info("Server %lu ->Calling become candidate",loc_id_);
-      becomeCandidate();
-      Log_info("Server %lu ->After become candidate",loc_id_);
-    }
-    if(state == "leader")
-    {
-      mtx_.unlock();
-      Log_info("Server %lu ->Calling become leader",loc_id_);
-      becomeLeader();
-      Log_info("Server %lu ->After leader",loc_id_);
-    }
-    mtx_.unlock();
-    Log_info("Server %lu -> Inside setup before couroutine sleep",loc_id_);
-    Coroutine::Sleep(5000);
-    Log_info("Server %lu -> Inside setup after couroutine sleep",loc_id_);
-  }
+
+  });
 
 }
 
@@ -795,6 +842,7 @@ void RaftServer::SyncRpcExample() {
 
 void RaftServer::Disconnect(const bool disconnect) {
   std::lock_guard<std::recursive_mutex> lock(mtx_);
+  Log_info("Server %lu -> Inside connect disconnect",loc_id_);
   verify(disconnected_ != disconnect);
   // global map of rpc_par_proxies_ values accessed by partition then by site
   static map<parid_t, map<siteid_t, map<siteid_t, vector<SiteProxyPair>>>> _proxies{};
@@ -824,7 +872,7 @@ void RaftServer::Disconnect(const bool disconnect) {
 
 bool RaftServer::IsDisconnected() 
 {
-  Log_info("Checking is disconnedted for %lu",loc_id_);
+  Log_info("Server %lu -> Checking is disconnedted %d",loc_id_,disconnected_);
   return disconnected_;
 }
 

@@ -126,6 +126,7 @@ bool Event::Test() {
     } else if (status_ == TIMEOUT) {
       // do nothing
     } else {
+      Log_info("Checking verify for event at server");
       verify(0);
     }
     return true;

@@ -16,13 +16,13 @@ RaftCommo::RaftCommo(PollMgr* poll) : Communicator(poll) {
 
 shared_ptr<IntEvent> 
 RaftCommo::SendRequestVote(
-                                parid_t par_id,
-                                uint64_t term,
-                                siteid_t candidateId,
-                                uint64_t lastLogIndex,
-                                uint64_t lastLogTerm,
-                                uint64_t* max_return_term,
-                                uint64_t* total_votes_granted) 
+                            parid_t par_id,
+                            uint64_t term,
+                            siteid_t candidateId,
+                            uint64_t lastLogIndex,
+                            uint64_t lastLogTerm,
+                            uint64_t* max_return_term,
+                            uint64_t* total_votes_granted) 
 {
   /*
    * Example code for sending a single RPC to server at site_id
@@ -31,20 +31,21 @@ RaftCommo::SendRequestVote(
   Log_info("Server %lu -> Commo- Inside request vote",candidateId);
 
   auto proxies = rpc_par_proxies_[par_id];
-  uint64_t temp_max_return_term = 0;
-  uint64_t temp_total_votes_granted = 1;
-  std::mutex mutex_;
-
+  //uint64_t temp_max_return_term = 0;
+  uint64_t count = 0;
+  //uint64_t temp_total_votes_granted = 1;
+  //uint64_t *pointer_to_total_votes = &temp_total_votes_granted;
+  //uint64_t *pointer_to_max_return_term = &temp_max_return_term;
+  uint64_t *pointer_to_count = &count;
+  
   //Log_info("Entering call loop for %lli",candidateId);
   auto ev_total = Reactor::CreateSpEvent<IntEvent>();
-  int count = 0;
   for (auto& p : proxies)
   {
-    auto ev_individual = Reactor::CreateSpEvent<IntEvent>();
-    uint64_t returnTerm = 0;
-    bool_t vote_granted = false;
-    uint64_t *pointer_to_returnTerm = &returnTerm;
-    bool_t *pointer_to_bool = &vote_granted;
+    //auto ev_individual = Reactor::CreateSpEvent<IntEvent>();
+    
+    //uint64_t *pointer_to_returnTerm = &returnTerm;
+    //bool_t *pointer_to_bool = &vote_granted;
     RaftProxy *proxy = (RaftProxy*) p.second;
     FutureAttr fuattr;
       
@@ -55,9 +56,23 @@ RaftCommo::SendRequestVote(
       fuattr.callback = [=](Future* fu) 
       {
       
-        fu->get_reply() >> *pointer_to_returnTerm;
-        fu->get_reply() >> *pointer_to_bool;
-        ev_individual->Set(1);
+        uint64_t returnTerm = 0;
+        bool_t vote_granted = false;
+
+        fu->get_reply() >> returnTerm;
+        fu->get_reply() >> vote_granted;
+        std::mutex mutex_;
+        std::lock_guard<std::mutex> guard(mutex_);
+        if(vote_granted)
+        {
+          (*total_votes_granted)++;
+        }
+        (*max_return_term) = max(returnTerm,*max_return_term);
+        (*pointer_to_count)++;
+        if((*pointer_to_count) >= 4)
+        {
+          ev_total->Set(1);
+        }
         //Log_info("Processing RPC response for ")
       };
       
@@ -71,32 +86,32 @@ RaftCommo::SendRequestVote(
                 lastLogTerm, 
                 fuattr
               );
+      //ev_individual -> Wait(10000);
     }
-    ev_individual -> Wait(10000);
-    if(ev_individual -> status_ == Event::TIMEOUT)
-    {
-      Log_info("Server %lu -> Commo - Request vote to %lli timed out",candidateId,p.first);
-    }
-    else
-    {
-      Log_info("Server %lu -> Commo - Got response without timeout from %lli as %d as vote and %lli as return term",candidateId,p.first,vote_granted,returnTerm);
-      mutex_.lock();
-      count++;
-      if(vote_granted)
-      {
-        //Log_info("Positive vote got, increasing");
-        temp_total_votes_granted++;
-      }
-      temp_max_return_term = max(temp_max_return_term,returnTerm);
-      mutex_.unlock();
-      //Log_info("Updated values of temp total votes and temp index is %lli and %lli",temp_total_votes_granted,temp_max_return_term);
-    }
+    //if(ev_individual -> status_ == Event::TIMEOUT)
+    //{
+      //Log_info("Server %lu -> Commo - Request vote to %lli timed out",candidateId,p.first);
+    //}
+    // else
+    // {
+    //   Log_info("Server %lu -> Commo - Got response without timeout from %lli as %d as vote and %lli as return term",candidateId,p.first,vote_granted,returnTerm);
+    //   mutex_.lock();
+    //   count++;
+    //   if(vote_granted)
+    //   {
+    //     //Log_info("Positive vote got, increasing");
+    //     temp_total_votes_granted++;
+    //   }
+    //   temp_max_return_term = max(temp_max_return_term,returnTerm);
+    //   mutex_.unlock();
+    //   //Log_info("Updated values of temp total votes and temp index is %lli and %lli",temp_total_votes_granted,temp_max_return_term);
+    // }
   }
-  *max_return_term = temp_max_return_term;
-  *total_votes_granted = temp_total_votes_granted;
-  if(count)
-    ev_total -> Set(1);
-  Log_info("Server %lu -> Commo - Total votes granted are %lu and max return term is %lu",candidateId,*total_votes_granted,*max_return_term);
+  //*max_return_term = temp_max_return_term;
+  //*total_votes_granted = temp_total_votes_granted;
+  // if(count)
+  //   ev_total -> Set(1);
+  // Log_info("Server %lu -> Commo - Total votes granted are %lu and max return term is %lu",candidateId,*total_votes_granted,*max_return_term);
   return ev_total;
 }
 
@@ -115,19 +130,15 @@ RaftCommo::SendEmptyAppendEntries(
   Log_info("Server %lu -> Commo - Starting to send empty append entries",candidateId);
   
   auto proxies = rpc_par_proxies_[par_id];
-  uint64_t max_return_term = 0;
-  std::mutex mutex_;
-  int count =0;
-  Log_info("Server %lu -> Commo - Empty append entry - Before initialising global ev",candidateId);
+  uint64_t count = 0;
+  uint64_t *pointerToCount = &count;
+  //Log_info("Server %lu -> Commo - Empty append entry - Before initialising global ev",candidateId);
   auto ev_global = Reactor::CreateSpEvent<IntEvent>();
-  Log_info("Server %lu -> Before initialising global ev");
+  //Log_info("Server %lu -> Before initialising global ev",candidateId);
   for(auto& p : proxies)
   {
-    uint64_t returnTerm = 0;
-    uint64_t *pointer_to_returnTerm = &returnTerm;
-    Log_info("Server %lu -> Commo - Empty append entry - Before initialising individual ev");
-    auto ev_individual = Reactor::CreateSpEvent<IntEvent>();
-    Log_info("Server %lu -> Before initialising global ev");
+    //Log_info("Server %lu -> Commo - Empty append entry - Before initialising individual ev");
+    //Log_info("Server %lu -> Before initialising global ev");
     RaftProxy *proxy = (RaftProxy*) p.second;
     FutureAttr fuattr;
     if(p.first != candidateId) 
@@ -137,8 +148,16 @@ RaftCommo::SendEmptyAppendEntries(
       {
           /* this is a handler that will be invoked when the RPC returns */
           /* retrieve RPC return values in order */
-          fu->get_reply() >> *pointer_to_returnTerm;
-          ev_individual->Set(1);
+          uint64_t returnTerm;
+          fu->get_reply() >> returnTerm;
+          std::mutex mutex_;
+          std::lock_guard<std::mutex> guard(mutex_);
+          (*pointerToCount)++;
+          (*maxReturnTerm) = max((*maxReturnTerm),returnTerm);
+          if((*pointerToCount) >= 4)
+          {
+            ev_global->Set(1);
+          }
       };
       
       Call_Async( proxy, 
@@ -149,23 +168,20 @@ RaftCommo::SendEmptyAppendEntries(
                   fuattr
                 );
     }
-    ev_individual -> Wait(10000);
-    if(ev_individual -> status_ == Event::TIMEOUT)
-    {
-      Log_info("Server %lu -> Commo - Empty append entry to %lli failed",loc_id_,p.first);
-    }
-    else
-    {
-      mutex_.lock();
-      count++;
-      Log_info("Server %lu -> Commo - Got back %lli as return term from %lli",loc_id_,returnTerm,p.first);
-      max_return_term = max(max_return_term,returnTerm);
-      mutex_.unlock();
-    }
+    // ev_individual -> Wait(10000);
+    // if(ev_individual -> status_ == Event::TIMEOUT)
+    // {
+    //   Log_info("Server %lu -> Commo - Empty append entry to %lli failed",loc_id_,p.first);
+    // }
+    // else
+    // {
+    //   mutex_.lock();
+    //   count++;
+    //   Log_info("Server %lu -> Commo - Got back %lli as return term from %lli",loc_id_,returnTerm,p.first);
+    //   max_return_term = max(max_return_term,returnTerm);
+    //   mutex_.unlock();
+    // }
   }
-  *maxReturnTerm = max_return_term;
-  if(count)
-    ev_global->Set(1);
   return ev_global;
 }
 
