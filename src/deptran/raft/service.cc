@@ -81,6 +81,35 @@ void RaftServiceImpl::HandleAppendEntries(
   defer->reply();
 }
 
+void RaftServiceImpl::HandleAppendEntriesCombined(
+                                        const siteid_t& candidateId,
+                                        const uint64_t& prevLogIndex,
+                                        const uint64_t& prevLogTerm,
+                                        const uint64_t& logTerm,
+                                        const uint64_t& currentTerm,
+                                        const uint64_t& leaderCommitIndex,
+                                        const uint64_t& isHeartbeat,
+                                        const MarshallDeputy& md_cmd,
+                                        uint64_t* returnTerm,
+                                        bool_t* followerAppendOK,
+                                        rrr::DeferredReply* defer) {
+  Log_info("Server %lu -> Received Combined Append entries from %lu",svr_->loc_id_,candidateId);
+  svr_->HandleAppendEntriesCombined(
+                        candidateId,
+                        prevLogIndex,
+                        prevLogTerm,
+                        logTerm,
+                        currentTerm,
+                        leaderCommitIndex,
+                        isHeartbeat,
+                        md_cmd,
+                        returnTerm,
+                        followerAppendOK
+                    );
+  Log_info("Server %lu -> Handled append entry from %lu successfully",svr_->loc_id_,candidateId);
+  defer->reply();
+}
+
 void RaftServiceImpl::HandleHelloRpc(const string& req,
                                      string* res,
                                      rrr::DeferredReply* defer) {

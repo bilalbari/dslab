@@ -18,6 +18,17 @@ abstract service Raft {
                     uint64_t returnTerm,
                     bool_t followerAppendOK);
 
+  defer AppendEntriesCombined(siteid_t candidateId,
+                              uint64_t prevLogIndex,
+                              uint64_t prevLogTerm,
+                              uint64_t logTerm,
+                              uint64_t currentTerm,
+                              uint64_t leaderCommitIndex,
+                              uint64_t isHeartbeat,
+                              MarshallDeputy cmd |
+                              uint64_t returnTerm,
+                              bool_t followerAppendOK);
+
   defer EmptyAppendEntries( uint64_t term,
                             siteid_t candidateId,
                             uint64_t leaderCommitIndex |

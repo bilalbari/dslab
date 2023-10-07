@@ -45,8 +45,8 @@ class RaftServer : public TxLogServer {
   chrono::time_point<chrono::system_clock> lastStartTime;
   uint64_t commitIndex;
   uint64_t lastApplied;
-  vector<int> nextIndex;
-  vector<int> matchIndex;
+  vector<uint64_t> nextIndex;
+  vector<pair<uint64_t,uint64_t>> matchIndex;
 
   public:
     RaftServer(Frame *frame) ;
@@ -66,6 +66,18 @@ class RaftServer : public TxLogServer {
       Disconnect(false);
     }
     int generateElectionTimeout();
+    void HandleAppendEntriesCombined(
+                              const siteid_t& candidateId,
+                              const uint64_t& prevLogIndex,
+                              const uint64_t& prevLogTerm,
+                              const uint64_t& logTerm,
+                              const uint64_t& currentTerm,
+                              const uint64_t& leaderCommitIndex,
+                              const uint64_t& isHeartBeat,
+                              const MarshallDeputy& md_cmd,
+                              uint64_t* returnTerm,
+                              bool_t* followerAppendOK);
+                              
     void HandleEmptyAppendEntries(
                               const uint64_t& term,
                               const siteid_t& candidateId,
