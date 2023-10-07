@@ -93,7 +93,7 @@ void RaftServiceImpl::HandleAppendEntriesCombined(
                                         uint64_t* returnTerm,
                                         bool_t* followerAppendOK,
                                         rrr::DeferredReply* defer) {
-  Log_info("Server %lu -> Received Combined Append entries from %lu",svr_->loc_id_,candidateId);
+  //Log_info("Server %lu -> Received Combined Append entries from %lu",svr_->loc_id_,candidateId);
   svr_->HandleAppendEntriesCombined(
                         candidateId,
                         prevLogIndex,
@@ -106,7 +106,7 @@ void RaftServiceImpl::HandleAppendEntriesCombined(
                         returnTerm,
                         followerAppendOK
                     );
-  Log_info("Server %lu -> Handled append entry from %lu successfully",svr_->loc_id_,candidateId);
+  //Log_info("Server %lu -> Handled append entry from %lu successfully",svr_->loc_id_,candidateId);
   defer->reply();
 }
 

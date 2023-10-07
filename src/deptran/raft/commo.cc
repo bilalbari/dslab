@@ -49,13 +49,13 @@ RaftCommo::SendRequestVote(
       {
       
         uint64_t returnTerm = 0;
-        bool_t vote_granted = false;
+        bool_t vote_granted = 0;
 
         fu->get_reply() >> returnTerm;
         fu->get_reply() >> vote_granted;
         std::mutex mutex_;
         std::lock_guard<std::mutex> guard(mutex_);
-        if(vote_granted)
+        if(vote_granted == 1)
         {
           (*total_votes_granted)++;
         }
@@ -99,11 +99,11 @@ RaftCommo::SendAppendEntriesCombined(
 {
   auto proxies = rpc_par_proxies_[par_id];
   auto ev = Reactor::CreateSpEvent<IntEvent>();
-  Log_info("Server %lu -> Inside commo for Sending Combined Append entry ",candidateId);
+  //Log_info("Server %lu -> Inside commo for Sending Combined Append entry ",candidateId);
   for (auto& p : proxies) {
     if (p.first == site_id)
     {
-      Log_info("Server %lu -> Found match, calling async",candidateId);
+      //Log_info("Server %lu -> Found match, calling async",candidateId);
       RaftProxy *proxy = (RaftProxy*) p.second;
       FutureAttr fuattr;
       fuattr.callback = [=](Future* fu) {
@@ -112,7 +112,8 @@ RaftCommo::SendAppendEntriesCombined(
         fu->get_reply() >> *followerAppendOK;
         std::mutex mutex_;
         std::lock_guard<std::mutex> guard(mutex_);
-        ev->Set(1);
+        if(ev->status_ == Event::INIT)
+          ev->Set(1);
       };
       /* wrap Marshallable in a MarshallDeputy to send over RPC */
       MarshallDeputy md(cmd);
