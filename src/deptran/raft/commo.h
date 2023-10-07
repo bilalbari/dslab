@@ -24,6 +24,21 @@ class RaftCommo : public Communicator {
                     uint64_t *max_return_term,
                     uint64_t *total_votes_granted);
 
+  shared_ptr<IntEvent>
+  SendAppendEntriesCombined(
+                            const parid_t& par_id,
+                            const siteid_t& site_id,
+                            const siteid_t& candidateId,
+                            const uint64_t& prevLogIndex,
+                            const uint64_t& prevLogTerm,
+                            const uint64_t& logTerm,
+                            const uint64_t& leaderCurrentTerm,
+                            const uint64_t& leaderCommitIndex,
+                            const uint64_t& isHeartbeat,
+                            shared_ptr<Marshallable> cmd,
+                            uint64_t* returnTerm,
+                            bool_t* followerAppendOK);
+
   shared_ptr<IntEvent> 
   SendEmptyAppendEntries(
                           parid_t par_id,

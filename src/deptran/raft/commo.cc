@@ -63,7 +63,8 @@ RaftCommo::SendRequestVote(
         (*pointer_to_count)++;
         if((*pointer_to_count) >= 4)
         {
-          ev_total->Set(1);
+          if(ev_total->get() == 0)
+            ev_total->Set(1);
         }
       };
       
@@ -79,6 +80,58 @@ RaftCommo::SendRequestVote(
     }
   }
   return ev_total;
+}
+
+shared_ptr<IntEvent>
+RaftCommo::SendAppendEntriesCombined(
+                          const parid_t& par_id,
+                          const siteid_t& site_id,
+                          const siteid_t& candidateId,
+                          const uint64_t& prevLogIndex,
+                          const uint64_t& prevLogTerm,
+                          const uint64_t& logTerm,
+                          const uint64_t& currentTerm,
+                          const uint64_t& leaderCommitIndex,
+                          const uint64_t& isHeartBeat,
+                          shared_ptr<Marshallable> cmd,
+                          uint64_t* returnTerm,
+                          bool_t* followerAppendOK)
+{
+  auto proxies = rpc_par_proxies_[par_id];
+  auto ev = Reactor::CreateSpEvent<IntEvent>();
+  Log_info("Server %lu -> Inside commo for Sending Combined Append entry ",candidateId);
+  for (auto& p : proxies) {
+    if (p.first == site_id)
+    {
+      Log_info("Server %lu -> Found match, calling async",candidateId);
+      RaftProxy *proxy = (RaftProxy*) p.second;
+      FutureAttr fuattr;
+      fuattr.callback = [=](Future* fu) {
+
+        fu->get_reply() >> *returnTerm;
+        fu->get_reply() >> *followerAppendOK;
+        std::mutex mutex_;
+        std::lock_guard<std::mutex> guard(mutex_);
+        ev->Set(1);
+      };
+      /* wrap Marshallable in a MarshallDeputy to send over RPC */
+      MarshallDeputy md(cmd);
+      Call_Async( 
+                  proxy, 
+                  AppendEntriesCombined, 
+                  candidateId,
+                  prevLogIndex,
+                  prevLogTerm,
+                  logTerm,
+                  currentTerm,
+                  leaderCommitIndex,
+                  isHeartBeat,
+                  md,
+                  fuattr
+                );
+    }
+  }
+  return ev;
 }
 
 shared_ptr<IntEvent> 
@@ -162,7 +215,8 @@ RaftCommo::SendAppendEntries(parid_t par_id,
       fuattr.callback = [=](Future* fu) {
         fu->get_reply() >> *returnTerm;
         fu->get_reply() >> *followerAppendOK;
-        ev->Set(1);
+        if(ev->get() == 0)
+          ev->Set(1);
       };
       /* wrap Marshallable in a MarshallDeputy to send over RPC */
       MarshallDeputy md(cmd);
