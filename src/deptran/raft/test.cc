@@ -455,24 +455,31 @@ int RaftLabTest::testFailAgree(void) {
   // disconnect 2 followers
   auto leader = config_->OneLeader();
   AssertOneLeader(leader);
+  Print("Asserted one leader");
   Log_debug("disconnecting two followers leader");
   config_->Disconnect((leader + 1) % NSERVERS);
   config_->Disconnect((leader + 2) % NSERVERS);
+  Print("Disconnect two servers");
   // Agreement despite 2 disconnected servers
   Log_debug("try commit a few commands after disconnect");
   DoAgreeAndAssertIndex(401, NSERVERS - 2, index_++);
   DoAgreeAndAssertIndex(402, NSERVERS - 2, index_++);
+  Print("Asserted two commits");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   DoAgreeAndAssertIndex(403, NSERVERS - 2, index_++);
   DoAgreeAndAssertIndex(404, NSERVERS - 2, index_++);
+  Print("Asseted two more commits");
   // reconnect followers
   Log_debug("reconnect servers");
   config_->Reconnect((leader + 1) % NSERVERS);
   config_->Reconnect((leader + 2) % NSERVERS);
+  Print("Reconnected two more servers");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   Log_debug("try commit a few commands after reconnect");
+  Print("Asserting check for two disconnected servers");
   DoAgreeAndAssertWaitSuccess(405, NSERVERS);
   DoAgreeAndAssertWaitSuccess(406, NSERVERS);
+  Print("Asserted check for two disconnected servers");
   Passed2();
 }
 

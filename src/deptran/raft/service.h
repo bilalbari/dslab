@@ -47,7 +47,7 @@ class RaftServiceImpl : public RaftService {
                     uint64_t*, returnTerm,
                     bool_t*, vote_granted) {
     *returnTerm = 0;
-    *vote_granted = false;
+    *vote_granted = 0;
   }
 
   RpcHandler( AppendEntries, 8,
