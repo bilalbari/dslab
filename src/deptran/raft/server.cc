@@ -196,7 +196,7 @@ void RaftServer::becomeCandidate()
                             &total_votes_received
                           );
     Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
-    //Coroutine::Sleep(5000);
+    //Coroutine::Sleep(2000);
     //if(event->get() == 0)
     event->Wait(15000);
     Log_info("Server %lu -> Inside become candidate, after send request vote after wait",loc_id_);                      
@@ -279,12 +279,12 @@ void RaftServer::becomeCandidate()
       //std::lock_guard<std::recursive_mutex> guard(mtx_);
     Log_info("Server %lu -> Calling set on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
     //if(ev->get() == 0 )
-      ev->Set(1);
+        ev->Set(1);
     //}
   });
 
   Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
-  //Coroutine::Sleep(5000);
+  //Coroutine::Sleep(2000);
   //if(ev->get() == 0)
     ev->Wait(30000);
   Log_info("Server %lu -> Inside becomeCandidate after coroutine sleep",loc_id_);
@@ -303,7 +303,7 @@ void RaftServer::becomeCandidate()
     Log_info("Server %lu -> Will send votes after %f",loc_id_,(endTimeout-time_spent).count());
     Coroutine::Sleep((endTimeout-time_spent).count()*1000);
   }
-  //mtx_.unlock();
+  mtx_.unlock();
 }
 
 void RaftServer::HandleAppendEntries(
@@ -572,6 +572,7 @@ void RaftServer::becomeLeader()
                                       &followerAppendOK
                                     );
             Log_info("Server %lu -> Inside start consensus before calling individual wait",loc_id_);                        
+            Coroutine::Sleep(10000);
             event->Wait(15000);
             Log_info("Server %lu -> Inside s",loc_id_);
             mtx_.lock();
@@ -945,19 +946,19 @@ void RaftServer::becomeLeader()
 void RaftServer::Setup() {
   
   
-  Log_info("Server %lu -> Calling setup",loc_id_);
+  //Log_info("Server %lu -> Calling setup",loc_id_);
   Coroutine::CreateRun([this](){
     while(true)
     {
-      Log_info("Server %lu -> Inside setup starting",loc_id_);
+      //Log_info("Server %lu -> Inside setup starting",loc_id_);
       mtx_.lock();
       if(state == "follower")
       {
         uint64_t temp_term = currentTerm;
         mtx_.unlock();
-        Log_info("Server %lu ->Calling convert to follower",loc_id_);
+        //Log_info("Server %lu ->Calling convert to follower",loc_id_);
         convertToFollower(temp_term);
-        Log_info("Server %lu ->After convert to follower",loc_id_);
+        //Log_info("Server %lu ->After convert to follower",loc_id_);
       }
       if(state == "candidate")
       {
