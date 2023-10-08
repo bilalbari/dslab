@@ -692,7 +692,7 @@ void RaftServer::becomeLeader()
                                         &followerAppendOK
                                       );
             //Log_info("Server %lu -> After calling append entry as heartbeat before individual wait",loc_id_);
-            Coroutine::Sleep(10000);
+            Coroutine::Sleep(5000);
             mtx_.lock();
             if(event->status_ == Event::INIT)
             {
@@ -760,7 +760,7 @@ void RaftServer::becomeLeader()
         if(ev_global->status_ == Event::INIT)
         {
           mtx_.unlock();
-          ev_global->Wait(40000);
+          ev_global->Wait(30000);
         }
         mtx_.unlock();
         Log_info("Server %lu -> Inside consensus outside outer coroutine after calling global wait",loc_id_);                        
@@ -813,7 +813,7 @@ void RaftServer::becomeLeader()
         lastApplied++;
     }
     time_since_heartbeat = chrono::system_clock::now() - last_heartbeat_time;
-    uint64_t sleep_time = 100-time_since_heartbeat.count();
+    uint64_t sleep_time = 140-time_since_heartbeat.count();
     if(sleep_time>0)
     {
       //Log_info("Server %lu -> Sleeping for %d",loc_id_,sleep_time);
