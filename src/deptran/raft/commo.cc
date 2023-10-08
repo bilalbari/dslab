@@ -48,13 +48,13 @@ RaftCommo::SendRequestVote(
       fuattr.callback = [=](Future* fu) 
       {
       
+        std::recursive_mutex mutex_;
+        std::lock_guard<std::recursive_mutex> guard(mutex_);
         uint64_t returnTerm = 0;
         bool_t vote_granted = 0;
 
         fu->get_reply() >> returnTerm;
         fu->get_reply() >> vote_granted;
-        std::mutex mutex_;
-        std::lock_guard<std::mutex> guard(mutex_);
         if(vote_granted == 1)
         {
           (*total_votes_granted)++;

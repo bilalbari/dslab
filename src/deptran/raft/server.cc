@@ -41,7 +41,7 @@ RaftServer::~RaftServer() {
 
 int RaftServer::generateElectionTimeout(){
     srand(loc_id_);
-    return 600+(rand()%300);
+    return 250+(rand()%200);
 }
 
 void RaftServer::HandleEmptyAppendEntries(
@@ -200,7 +200,7 @@ void RaftServer::becomeCandidate()
                             &total_votes_received
                           );
     //Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
-    Coroutine::Sleep(2000);
+    Coroutine::Sleep(5000);
     //if(event->get() == 0)
     if(event->status_ == Event::INIT)
       event->Wait(5000);
@@ -219,7 +219,7 @@ void RaftServer::becomeCandidate()
       if(state != "candidate")
       {
         //Log_info("Server %lu -> Changed state to %s while waiting for votes",loc_id_,state.c_str());
-        if(state == "Leader")
+        if(state == "leader")
         {
           nextIndex = vector<uint64_t>{1,1,1,1,1};
           matchIndex = vector<pair<uint64_t,uint64_t>>{
@@ -278,22 +278,24 @@ void RaftServer::becomeCandidate()
         }
       }
       mtx_.unlock();
-      
     }
     //{
       //std::lock_guard<std::recursive_mutex> guard(mtx_);
     //Log_info("Server %lu -> Calling set on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
     //if(ev->get() == 0 )
+    Log_info("Server %lu -> Setting request vote ev");
     if(ev->status_ == Event::INIT)
       ev->Set(1);
     //}
   });
 
   //Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
-  //Coroutine::Sleep(2000);
+  //Coroutine::Sleep(5000);
   //if(ev->get() == 0)
+  Log_info("Server %lu -> Before wait on request vote ev");
   if(ev->status_ == Event::INIT)
-    ev->Wait(25000);
+    ev->Wait(10000);
+  Log_info("Server %lu -> After Wait on request vote ev");
   //Log_info("Server %lu -> Inside becomeCandidate after coroutine sleep",loc_id_);
   
   mtx_.lock();
@@ -565,12 +567,13 @@ void RaftServer::becomeLeader()
         auto ev_individual = Reactor::CreateSpEvent<IntEvent>();
         mtx_.unlock();
       
-        if(proxies[i].first != loc_id_)
-        {
           Log_info("Server %lu -> Sending global append entries to %lu",loc_id_,proxies[i].first);
           //Log_info("Server %lu -> Just before entering outer coroutine for sending entries",loc_id_);
-          Coroutine::CreateRun([=]
+        Coroutine::CreateRun([=]
+        {
+          if(proxies[i].first != loc_id_)
           {
+        
             //Log_info("Server %lu -> Entered coroutine block for sending append entries with current nextIndex %d and matchIndex %d",loc_id_,nextIndex[i],matchIndex[i]);
             mtx_.lock();
             uint64_t tempNextIndex = nextIndex[i];
@@ -609,11 +612,14 @@ void RaftServer::becomeLeader()
                                           &followerAppendOK
                                         );
                 Log_info("Server %lu -> Inside start consensus before calling sleep",loc_id_);                        
-                Coroutine::Sleep(2000);
+                Coroutine::Sleep(5000);
                 Log_info("Server %lu -> Inside start consensus after calling sleep before wait",loc_id_);                        
                 mtx_.lock();
                 if(event->status_ == Event::INIT)
-                  event->Wait(5000);
+                {
+                  mtx_.unlock();
+                  event->Wait(3000);
+                }
                 mtx_.unlock();
                 Log_info("Server %lu -> Inside start consensus after calling sleep after wait",loc_id_);
                 mtx_.lock();
@@ -698,7 +704,7 @@ void RaftServer::becomeLeader()
                                           &followerAppendOK
                                         );
               //Log_info("Server %lu -> After calling append entry as heartbeat before individual wait",loc_id_);
-              Coroutine::Sleep(2000);
+              Coroutine::Sleep(5000);
               mtx_.lock();
               if(event->status_ == Event::INIT)
               {
@@ -745,31 +751,26 @@ void RaftServer::becomeLeader()
                 }
                 mtx_.unlock();
               }
-              
-              //Log_info("Server %lu -> Inside consensus outside inner coroutine after calling sleep",loc_id_);                        
             }
-            Log_info("Server %lu -> Setting smart pointer global ev for per individual global ev%p",loc_id_,ev_global.get());
-            //Coroutine::Sleep(10000);
-            mtx_.lock();
-            if(ev_individual->status_ == Event::INIT)
-            {
-              mtx_.unlock();
-              ev_individual->Set(1);
-            }
+          }
+          Log_info("Server %lu -> Before set in ev individual",loc_id_);
+          mtx_.lock();
+          if(ev_individual->status_ == Event::INIT)
+          {
             mtx_.unlock();
-          });
-          Log_info("Server %lu ->Before Calling wait on smart pointer per individual for ev_global %p",loc_id_,ev_global.get());
-          //Coroutine::Sleep(10000);
-          //if(ev_global->get() == 0)
-        }
+            ev_individual->Set(1);
+          }
+          mtx_.unlock();
+        });
         mtx_.lock();
+        Log_info("Server %lu -> Before wait on ev individual",loc_id_,ev_global.get());
         if(ev_individual->status_ == Event::INIT)
         {
           mtx_.unlock();
-          ev_individual->Wait(35000);
+          ev_individual->Wait(40000);
         }
         mtx_.unlock();
-        Log_info("Server %lu -> Inside consensus outside outer coroutine after calling global wait",loc_id_);                        
+        Log_info("Server %lu -> After wait on ev individual",loc_id_);                        
         if(ev_individual->status_ == Event::TIMEOUT)
         {
           Log_info("Server %lu -> Log replication to %lu failed, will try later, moving to next one",loc_id_,proxies[i].first);
@@ -781,17 +782,20 @@ void RaftServer::becomeLeader()
       }
       if(ev_global->status_ == Event::INIT)
       {
+        Log_info("Server %lu -> Before set on ev_global");
         ev_global->Set(1);
       }
     });
+    Coroutine::Sleep(10000);
     mtx_.lock();
     if(ev_global->status_ == Event::INIT)
     {
       mtx_.unlock();
+      Log_info("Server %lu -> Before wait on ev global",loc_id_);
       ev_global->Wait(150000);
+      Log_info("Server %lu -> After ev global",loc_id_);                        
     }
     mtx_.unlock();
-    Log_info("Server %lu -> Inside consensus outside outer coroutine after calling global wait",loc_id_);                        
     if(ev_global->status_ == Event::TIMEOUT)
     {
       Log_info("Server %lu -> The entire request vote operation could not complete, will try later after timeout",loc_id_);
@@ -839,8 +843,8 @@ void RaftServer::becomeLeader()
         lastApplied++;
     }
     time_since_heartbeat = chrono::system_clock::now() - last_heartbeat_time;
-    uint64_t sleep_time = 200-time_since_heartbeat.count();
-    if(sleep_time>0)
+    uint64_t sleep_time = 140-time_since_heartbeat.count();
+    if(sleep_time>0 && sleep_time<150)
     {
       //Log_info("Server %lu -> Sleeping for %d",loc_id_,sleep_time);
       mtx_.unlock();
@@ -852,7 +856,7 @@ void RaftServer::becomeLeader()
     if(state!="leader")
     {
       mtx_.unlock();
-      return;
+      break;
     }
     mtx_.unlock();
   }
