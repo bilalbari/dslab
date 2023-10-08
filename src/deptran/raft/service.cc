@@ -90,6 +90,7 @@ void RaftServiceImpl::HandleAppendEntriesCombined(
                                         const uint64_t& leaderCommitIndex,
                                         const uint64_t& isHeartbeat,
                                         const MarshallDeputy& md_cmd,
+                                        uint64_t* followerLogSize,
                                         uint64_t* returnTerm,
                                         bool_t* followerAppendOK,
                                         rrr::DeferredReply* defer) {
@@ -103,6 +104,7 @@ void RaftServiceImpl::HandleAppendEntriesCombined(
                         leaderCommitIndex,
                         isHeartbeat,
                         md_cmd,
+                        followerLogSize,
                         returnTerm,
                         followerAppendOK
                     );

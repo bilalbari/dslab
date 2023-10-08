@@ -75,6 +75,7 @@ class RaftServer : public TxLogServer {
                               const uint64_t& leaderCommitIndex,
                               const uint64_t& isHeartBeat,
                               const MarshallDeputy& md_cmd,
+                              uint64_t* followerLogSize,
                               uint64_t* returnTerm,
                               bool_t* followerAppendOK);
                               

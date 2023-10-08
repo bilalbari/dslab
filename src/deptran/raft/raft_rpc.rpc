@@ -26,6 +26,7 @@ abstract service Raft {
                               uint64_t leaderCommitIndex,
                               uint64_t isHeartbeat,
                               MarshallDeputy cmd |
+                              uint64_t followerLogSize,
                               uint64_t returnTerm,
                               bool_t followerAppendOK);
 

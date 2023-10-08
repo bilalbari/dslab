@@ -63,7 +63,7 @@ class RaftServiceImpl : public RaftService {
     *returnTerm = 0;
   }
 
-  RpcHandler( AppendEntriesCombined, 10,
+  RpcHandler( AppendEntriesCombined, 11,
               const siteid_t&, candidateId,
               const uint64_t&, prevLogIndex,
               const uint64_t&, prevLogTerm,
@@ -72,10 +72,12 @@ class RaftServiceImpl : public RaftService {
               const uint64_t&, leaderCommitIndex,
               const uint64_t&, isHeartbeat,
               const MarshallDeputy&, md_cmd,
+              uint64_t*, followerLogSize,
               uint64_t*, returnTerm,
               bool_t*, followerAppendOK) {
-    *followerAppendOK = 0;
+    *followerLogSize = 1;
     *returnTerm = 0;
+    *followerAppendOK = 0;
   }
 
   RpcHandler( EmptyAppendEntries, 4,

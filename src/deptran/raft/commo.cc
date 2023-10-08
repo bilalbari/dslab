@@ -94,6 +94,7 @@ RaftCommo::SendAppendEntriesCombined(
                           const uint64_t& leaderCommitIndex,
                           const uint64_t& isHeartBeat,
                           shared_ptr<Marshallable> cmd,
+                          uint64_t* followerLogSize,
                           uint64_t* returnTerm,
                           bool_t* followerAppendOK)
 {
@@ -108,6 +109,7 @@ RaftCommo::SendAppendEntriesCombined(
       FutureAttr fuattr;
       fuattr.callback = [=](Future* fu) {
 
+        fu->get_reply() >> *followerLogSize;
         fu->get_reply() >> *returnTerm;
         fu->get_reply() >> *followerAppendOK;
         std::recursive_mutex mutex_;

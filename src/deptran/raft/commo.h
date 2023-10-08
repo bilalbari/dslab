@@ -36,6 +36,7 @@ class RaftCommo : public Communicator {
                             const uint64_t& leaderCommitIndex,
                             const uint64_t& isHeartbeat,
                             shared_ptr<Marshallable> cmd,
+                            uint64_t* followerLogSize,
                             uint64_t* returnTerm,
                             bool_t* followerAppendOK);
 

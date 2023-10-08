@@ -58,13 +58,8 @@ int RaftTestConfig::waitOneLeader(bool want_leader, int expected) {
     for (i = 0; i < NSERVERS; i++) {
       // ignore disconnected servers
       if (RaftTestConfig::replicas[i]->svr_->IsDisconnected())
-      {
-        Print("Server disconnected %d",i);
         continue;
-      }
-      Print("Calling get state for %d",i);
       RaftTestConfig::replicas[i]->svr_->GetState(&isleader, &term);
-      Print("Got response from get state for %d",i);
       if (isleader) {
         if (term == mostRecentTerm) {
           Failed("multiple leaders elected in term %ld", term);
