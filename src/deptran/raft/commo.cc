@@ -110,13 +110,17 @@ RaftCommo::SendAppendEntriesCombined(
 
         fu->get_reply() >> *returnTerm;
         fu->get_reply() >> *followerAppendOK;
-        std::mutex mutex_;
-        std::lock_guard<std::mutex> guard(mutex_);
+        std::recursive_mutex mutex_;
+        std::lock_guard<std::recursive_mutex> lock_guard(mutex_);
         if(ev->status_ == Event::INIT)
           ev->Set(1);
       };
       /* wrap Marshallable in a MarshallDeputy to send over RPC */
+      Log_info("Server %lu -> Trying to create marshall deputy",candidateId);
+      std::recursive_mutex mutex_1;
+      std::lock_guard<std::recursive_mutex> lock_guard(mutex_1);
       MarshallDeputy md(cmd);
+      Log_info("Server %lu -> Creation succeeded",candidateId);
       Call_Async( 
                   proxy, 
                   AppendEntriesCombined, 

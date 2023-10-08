@@ -388,7 +388,7 @@ void RaftServer::HandleAppendEntriesCombined(
                             uint64_t* returnTerm,
                             bool_t* followerAppendOK)
 {
-  mtx_.lock();
+  std::lock_guard<std::recursive_mutex> guard(mtx_);
   *returnTerm = currentTerm;
   *followerAppendOK = 0;
   uint64_t lastLogIndex = stateLog.size()-1;
@@ -400,7 +400,6 @@ void RaftServer::HandleAppendEntriesCombined(
     //votedFor = 6;
     //lastStartTime
     *followerAppendOK = 0;
-    mtx_.unlock();
     return;
   }
   if(currentTerm <= leaderCurrentTerm)
@@ -412,7 +411,6 @@ void RaftServer::HandleAppendEntriesCombined(
       lastStartTime = std::chrono::system_clock::now();
       currentTerm = leaderCurrentTerm;
       state = "follower";
-      mtx_.unlock();
       return;
     }
     else
@@ -437,7 +435,7 @@ void RaftServer::HandleAppendEntriesCombined(
       if(isHeartbeat == 0)
       {
         //Log_info("Sever %lu -> Received heartbeat",loc_id_);
-        stateLog.erase(std::next(stateLog.begin(),prevLogIndex+1),stateLog.end());
+        stateLog.erase(stateLog.begin()+prevLogIndex+1,stateLog.end());
         stateLog.push_back(LogEntry(cmd,logTerm));
       }
       *followerAppendOK = 1;
@@ -460,7 +458,6 @@ void RaftServer::HandleAppendEntriesCombined(
     lastApplied++;
   }
   //Log_info("Server %lu -> Append entry from %lu processed",loc_id_,candidateId);
-  mtx_.unlock();
 }
 
 
@@ -553,19 +550,19 @@ void RaftServer::becomeLeader()
     mtx_.unlock();
     for(int i=0;i<proxies.size();i++)
     {
+      mtx_.lock();
       if(state != "leader")
       {
-        Log_info("Server %lu -> Found state as not leader, stepping down",loc_id_);
+        mtx_.unlock();
         break;
       }
+      auto ev_global = Reactor::CreateSpEvent<IntEvent>();
+      mtx_.unlock();
     
       if(proxies[i].first != loc_id_)
       {
         Log_info("Server %lu -> Sending global append entries to %lu",loc_id_,proxies[i].first);
         //Log_info("Server %lu -> Just before entering outer coroutine for sending entries",loc_id_);
-        mtx_.lock();
-        auto ev_global = Reactor::CreateSpEvent<IntEvent>();
-        mtx_.unlock();
         Coroutine::CreateRun([this,i,proxies,ev_global,lastLogIndex]
         {
           //Log_info("Server %lu -> Entered coroutine block for sending append entries with current nextIndex %d and matchIndex %d",loc_id_,nextIndex[i],matchIndex[i]);
@@ -585,6 +582,7 @@ void RaftServer::becomeLeader()
               uint64_t prevLogTerm = stateLog[prevLogIndex].term;
               uint64_t currentNextIndex= nextIndex[i];
               uint64_t currentLogTerm = stateLog[currentNextIndex].term;
+              std::shared_ptr<Marshallable> my_shared = stateLog[currentNextIndex].cmd;
               bool_t followerAppendOK = 0;
               uint64_t isHeartbeat = 0;
               Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry",loc_id_);
@@ -600,7 +598,7 @@ void RaftServer::becomeLeader()
                                         currentTerm,
                                         commitIndex,
                                         isHeartbeat,
-                                        stateLog[currentNextIndex].cmd,
+                                        my_shared,
                                         &returnTerm,
                                         &followerAppendOK
                                       );
@@ -635,7 +633,7 @@ void RaftServer::becomeLeader()
                 }
                 else
                 {
-                  if(followerAppendOK)
+                  if(followerAppendOK == 1)
                   {
                     Log_info("Server %lu -> Append entry for %lu accepted",loc_id_,proxies[i].first);
                     matchIndex[i] = {currentNextIndex,currentTerm};
@@ -647,7 +645,7 @@ void RaftServer::becomeLeader()
                   else if( returnTerm != 0)
                   {
                     Log_info("Server %lu -> Append entry for %lu rejected",loc_id_,proxies[i].first);
-                    if(currentNextIndex>0)
+                    if(currentNextIndex>1)
                     {
                       Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
                       currentNextIndex--;
@@ -656,11 +654,13 @@ void RaftServer::becomeLeader()
                   }
                 }
               }
-              //Log_info("Server %lu -> Inside consensus outside inner coroutine before calling sleep",loc_id_);                        
               tempNextIndex = nextIndex[i];
+              if(state != "leader")
+              {
+                mtx_.unlock();
+                break;
+              }
               mtx_.unlock();
-              //Coroutine::Sleep(1000);
-              //Log_info("Server %lu -> Inside consensus outside inner coroutine after calling sleep",loc_id_);                        
             }
           }
           else
@@ -730,7 +730,7 @@ void RaftServer::becomeLeader()
                 else if(returnTerm != 0)
                 {
                   //Log_info("Server %lu -> Append entry for %lu rejected",loc_id_,proxies[i].first);
-                  if(currentNextIndex>0)
+                  if(currentNextIndex>1)
                   {
                     //Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
                     nextIndex[i] = currentNextIndex-1;
@@ -739,6 +739,7 @@ void RaftServer::becomeLeader()
               }
               mtx_.unlock();
             }
+            
             //Log_info("Server %lu -> Inside consensus outside inner coroutine after calling sleep",loc_id_);                        
           }
           Log_info("Server %lu -> Setting smart pointer global ev for per individual global ev%p",loc_id_,ev_global.get());
@@ -759,7 +760,7 @@ void RaftServer::becomeLeader()
         if(ev_global->status_ == Event::INIT)
         {
           mtx_.unlock();
-          ev_global->Wait(30000);
+          ev_global->Wait(40000);
         }
         mtx_.unlock();
         Log_info("Server %lu -> Inside consensus outside outer coroutine after calling global wait",loc_id_);                        
