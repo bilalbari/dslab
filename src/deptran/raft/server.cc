@@ -584,9 +584,10 @@ void RaftServer::becomeLeader()
             if(tempNextIndex <= lastLogIndex)
             {
               Log_info("Server %lu -> Sending append entry to %lu",loc_id_,proxies[i].first);
+              uint64_t iteration = 1;
               while(tempNextIndex <= lastLogIndex)
               {
-                Log_info("Server %lu -> Inside while for entry %lu to server %lu",loc_id_,tempNextIndex,proxies[i].first);
+                Log_info("Server %lu -> Inside while itr %lu for entry %lu to server %lu",loc_id_,iteration,tempNextIndex,proxies[i].first);
                 mtx_.lock();
                 uint64_t returnTerm = 0;
                 uint64_t prevLogIndex = nextIndex[i]-1;
@@ -615,9 +616,9 @@ void RaftServer::becomeLeader()
                                           &returnTerm,
                                           &followerAppendOK
                                         );
-                Log_info("Server %lu -> Inside start consensus before calling sleep for %lu",loc_id_,proxies[i].first);                        
+                Log_info("Server %lu -> Inside start consensus for while itr %lu before calling sleep for %lu",loc_id_,iteration,proxies[i].first);                        
                 Coroutine::Sleep(5000);
-                Log_info("Server %lu -> Inside start consensus after calling sleep before wait for %lu",loc_id_,proxies[i].first);                        
+                Log_info("Server %lu -> Inside start consensus for while itr %lu after calling sleep before wait for %lu",loc_id_,iteration,proxies[i].first);                        
                 mtx_.lock();
                 if(event->status_ == Event::INIT)
                 {
@@ -625,7 +626,7 @@ void RaftServer::becomeLeader()
                   event->Wait(3000);
                 }
                 mtx_.unlock();
-                Log_info("Server %lu -> Inside start consensus after calling sleep after wait for %lu",loc_id_,proxies[i].first);
+                Log_info("Server %lu -> Inside start consensus for while itr %lu after calling sleep after wait for %lu",loc_id_,iteration,proxies[i].first);
                 mtx_.lock();
                 //Log_info("Server %lu -> Inside start consensus after calling individual wait",loc_id_);
                 Log_info("Server %lu -> Got back return term %lu from %lu",loc_id_,returnTerm,proxies[i].first);
@@ -676,6 +677,7 @@ void RaftServer::becomeLeader()
                   mtx_.unlock();
                   break;
                 }
+                iteration++;
                 mtx_.unlock();
               }
             }
@@ -769,10 +771,10 @@ void RaftServer::becomeLeader()
           mtx_.unlock();
         });
         mtx_.lock();
-        Log_info("Server %lu -> Before wait on ev individual for %lu",loc_id_,proxies[i].first);
         if(ev_individual->status_ == Event::INIT)
         {
           mtx_.unlock();
+          Log_info("Server %lu -> Before wait on ev individual for %lu",loc_id_,proxies[i].first);
           ev_individual->Wait(40000);
         }
         mtx_.unlock();
@@ -976,7 +978,6 @@ void RaftServer::SyncRpcExample() {
 
 void RaftServer::Disconnect(const bool disconnect) {
   std::lock_guard<std::recursive_mutex> lock(mtx_);
-  Log_info("Server %lu -> Inside connect disconnect",loc_id_);
   verify(disconnected_ != disconnect);
   // global map of rpc_par_proxies_ values accessed by partition then by site
   static map<parid_t, map<siteid_t, map<siteid_t, vector<SiteProxyPair>>>> _proxies{};
@@ -1006,7 +1007,6 @@ void RaftServer::Disconnect(const bool disconnect) {
 
 bool RaftServer::IsDisconnected() 
 {
-  Log_info("Server %lu -> Checking is disconnedted %d",loc_id_,disconnected_);
   return disconnected_;
 }
 
