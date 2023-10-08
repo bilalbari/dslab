@@ -390,10 +390,12 @@ void RaftServer::HandleAppendEntriesCombined(
                             const uint64_t& leaderCommitIndex,
                             const uint64_t& isHeartbeat,
                             const MarshallDeputy& md_cmd,
+                            uint64_t* followerLogSize,
                             uint64_t* returnTerm,
                             bool_t* followerAppendOK)
 {
   std::lock_guard<std::recursive_mutex> guard(mtx_);
+  *followerLogSize = stateLog.size();
   *returnTerm = currentTerm;
   *followerAppendOK = 0;
   uint64_t lastLogIndex = stateLog.size()-1;
@@ -591,10 +593,11 @@ void RaftServer::becomeLeader()
                 uint64_t prevLogTerm = stateLog[prevLogIndex].term;
                 uint64_t currentNextIndex= nextIndex[i];
                 uint64_t currentLogTerm = stateLog[currentNextIndex].term;
+                uint64_t followerLogSize = stateLog.size();
                 std::shared_ptr<Marshallable> my_shared = stateLog[currentNextIndex].cmd;
                 bool_t followerAppendOK = 0;
                 uint64_t isHeartbeat = 0;
-                Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry",loc_id_);
+                Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry for %lu",loc_id_,proxies[i].first);
                 mtx_.unlock();
                 
                 auto event = commo()->SendAppendEntriesCombined(
@@ -608,12 +611,13 @@ void RaftServer::becomeLeader()
                                           commitIndex,
                                           isHeartbeat,
                                           my_shared,
+                                          &followerLogSize,
                                           &returnTerm,
                                           &followerAppendOK
                                         );
-                Log_info("Server %lu -> Inside start consensus before calling sleep",loc_id_);                        
+                Log_info("Server %lu -> Inside start consensus before calling sleep for %lu",loc_id_,proxies[i].first);                        
                 Coroutine::Sleep(5000);
-                Log_info("Server %lu -> Inside start consensus after calling sleep before wait",loc_id_);                        
+                Log_info("Server %lu -> Inside start consensus after calling sleep before wait for %lu",loc_id_,proxies[i].first);                        
                 mtx_.lock();
                 if(event->status_ == Event::INIT)
                 {
@@ -621,7 +625,7 @@ void RaftServer::becomeLeader()
                   event->Wait(3000);
                 }
                 mtx_.unlock();
-                Log_info("Server %lu -> Inside start consensus after calling sleep after wait",loc_id_);
+                Log_info("Server %lu -> Inside start consensus after calling sleep after wait for %lu",loc_id_,proxies[i].first);
                 mtx_.lock();
                 //Log_info("Server %lu -> Inside start consensus after calling individual wait",loc_id_);
                 Log_info("Server %lu -> Got back return term %lu from %lu",loc_id_,returnTerm,proxies[i].first);
@@ -661,7 +665,7 @@ void RaftServer::becomeLeader()
                       {
                         Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
                         currentNextIndex--;
-                        nextIndex[i] = currentNextIndex;
+                        nextIndex[i] = min(currentNextIndex,followerLogSize);
                       }
                     }
                   }
@@ -684,6 +688,7 @@ void RaftServer::becomeLeader()
               uint64_t prevLogTerm = stateLog[prevLogIndex].term;
               uint64_t currentNextIndex= nextIndex[i];
               Marshallable* m = new CmdData();
+              uint64_t followerLogSize = stateLog.size();
               std::shared_ptr<Marshallable> my_shared(m);
               bool_t followerAppendOK = 0;
               uint64_t isHeartbeat = 1;
@@ -700,6 +705,7 @@ void RaftServer::becomeLeader()
                                           commitIndex,
                                           isHeartbeat,
                                           my_shared,
+                                          &followerLogSize,
                                           &returnTerm,
                                           &followerAppendOK
                                         );
@@ -745,7 +751,7 @@ void RaftServer::becomeLeader()
                     if(currentNextIndex>1)
                     {
                       //Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
-                      nextIndex[i] = currentNextIndex-1;
+                      nextIndex[i] = min(currentNextIndex-1,followerLogSize);
                     }
                   }
                 }
@@ -763,14 +769,14 @@ void RaftServer::becomeLeader()
           mtx_.unlock();
         });
         mtx_.lock();
-        Log_info("Server %lu -> Before wait on ev individual",loc_id_,ev_global.get());
+        Log_info("Server %lu -> Before wait on ev individual for %lu",loc_id_,proxies[i].first);
         if(ev_individual->status_ == Event::INIT)
         {
           mtx_.unlock();
           ev_individual->Wait(40000);
         }
         mtx_.unlock();
-        Log_info("Server %lu -> After wait on ev individual",loc_id_);                        
+        Log_info("Server %lu -> After wait on ev individual for %lu",loc_id_,proxies[i].first);                        
         if(ev_individual->status_ == Event::TIMEOUT)
         {
           Log_info("Server %lu -> Log replication to %lu failed, will try later, moving to next one",loc_id_,proxies[i].first);
