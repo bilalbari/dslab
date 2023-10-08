@@ -174,16 +174,16 @@ void RaftServer::becomeCandidate()
   votedFor = loc_id_;
   chrono::duration<double,milli> time_spent = 
                   chrono::system_clock::now() - lastStartTime;
+  auto ev = Reactor::CreateSpEvent<IntEvent>();
   mtx_.unlock();
 
-  auto ev = Reactor::CreateSpEvent<IntEvent>();
   //Log_info("Server %lu -> Inside become candidate, going for request vote",loc_id_);
   Coroutine::CreateRun([=](){
 
+    
+    mtx_.lock();
     uint64_t max_return_term=0;
     uint64_t total_votes_received=1;
-
-    mtx_.lock();
     uint64_t tempCurrentTerm = currentTerm;
     uint64_t tempLastLogIndex = stateLog.size()-1;
     uint64_t tempLastLogTerm = stateLog[tempLastLogIndex].term;
@@ -283,7 +283,7 @@ void RaftServer::becomeCandidate()
         mtx_.unlock();
       }
     }
-    Log_info("Server %lu -> Setting request vote ev");
+    Log_info("Server %lu -> Setting request vote ev",loc_id_);
     if(ev->status_ == Event::INIT)
       ev->Set(1);
     mtx_.unlock();
@@ -569,7 +569,7 @@ void RaftServer::becomeLeader()
         auto ev_individual = Reactor::CreateSpEvent<IntEvent>();
         mtx_.unlock();
       
-          Log_info("Server %lu -> Sending global append entries to %lu",loc_id_,proxies[i].first);
+        Log_info("Server %lu -> Sending global append entries to %lu",loc_id_,proxies[i].first);
           //Log_info("Server %lu -> Just before entering outer coroutine for sending entries",loc_id_);
         Coroutine::CreateRun([=]
         {
