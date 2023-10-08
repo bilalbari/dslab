@@ -41,7 +41,7 @@ RaftServer::~RaftServer() {
 
 int RaftServer::generateElectionTimeout(){
     srand(loc_id_);
-    return 300+(rand()%500);
+    return 500+(rand()%300);
 }
 
 void RaftServer::HandleEmptyAppendEntries(
@@ -200,9 +200,10 @@ void RaftServer::becomeCandidate()
                             &total_votes_received
                           );
     //Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
-    Coroutine::Sleep(10000);
+    Coroutine::Sleep(5000);
     //if(event->get() == 0)
-    event->Wait(5000);
+    if(event->status_ == Event::INIT)
+      event->Wait(5000);
     //Log_info("Server %lu -> Inside become candidate, after send request vote after wait",loc_id_);                      
     if(event->status_ == Event::TIMEOUT)
     {
@@ -290,7 +291,7 @@ void RaftServer::becomeCandidate()
   //Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
   //Coroutine::Sleep(2000);
   //if(ev->get() == 0)
-  ev->Wait(30000);
+  ev->Wait(15000);
   //Log_info("Server %lu -> Inside becomeCandidate after coroutine sleep",loc_id_);
   
   mtx_.lock();
@@ -813,7 +814,7 @@ void RaftServer::becomeLeader()
         lastApplied++;
     }
     time_since_heartbeat = chrono::system_clock::now() - last_heartbeat_time;
-    uint64_t sleep_time = 140-time_since_heartbeat.count();
+    uint64_t sleep_time = 100-time_since_heartbeat.count();
     if(sleep_time>0)
     {
       //Log_info("Server %lu -> Sleeping for %d",loc_id_,sleep_time);
