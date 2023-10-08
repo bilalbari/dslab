@@ -204,7 +204,7 @@ void RaftServer::becomeCandidate()
     if(state == "candidate")
     {
       mtx_.unlock();
-      Coroutine::Sleep(5000);
+      //Coroutine::Sleep(5000);
       if(event->status_ == Event::INIT)
         event->Wait(5000);
       if(event->status_ == Event::TIMEOUT)
