@@ -21,11 +21,11 @@ Asking python-config for pyembed '--cflags --libs --ldflags --embed' flags : yes
 Testing pyembed configuration                                              : yes 
 Asking python-config for pyext '--cflags --libs --ldflags' flags           : yes 
 Testing pyext configuration                                                : yes 
-'configure' finished successfully (2.375s)
+'configure' finished successfully (2.319s)
 Waf: Entering directory `/home/bilal/CSE_535/dslabs-cpp-sayedbilalbari/build'
 [ 65/104] Compiling src/deptran/raft/server.cc
 [103/104] Linking build/deptran_server
 [104/104] Linking build/microbench
 Waf: Leaving directory `/home/bilal/CSE_535/dslabs-cpp-sayedbilalbari/build'
 cp build/_pyrpc*.so src/rrr/pylib/simplerpc/ 
-'build' finished successfully (5.388s)
+'build' finished successfully (5.185s)

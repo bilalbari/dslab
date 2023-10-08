@@ -513,34 +513,50 @@ int RaftLabTest::testRejoin(void) {
   // disconnect leader
   auto leader1 = config_->OneLeader();
   AssertOneLeader(leader1);
+  Print("Asserting leader, got one");
   config_->Disconnect(leader1);
+  Print("Disconnected leader");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   // Make old leader try to agree on some entries (these should not commit)
   uint64_t index, term;
+  Print("Making old leader trying to assert some commands, should not commit");
   AssertStartOk(config_->Start(leader1, 602, &index, &term));
   AssertStartOk(config_->Start(leader1, 603, &index, &term));
   AssertStartOk(config_->Start(leader1, 604, &index, &term));
   // New leader commits, successfully
+  Print("New leader successfully commits");
   DoAgreeAndAssertWaitSuccess(605, NSERVERS - 1);
   DoAgreeAndAssertWaitSuccess(606, NSERVERS - 1);
+  Print("New leader will be disconnected");
   // Disconnect new leader
   auto leader2 = config_->OneLeader();
+  Print("Asserting only one leader exists");
   AssertOneLeader(leader2);
   AssertReElection(leader2, leader1);
+  Print("Asserting reelection of new leader");
   config_->Disconnect(leader2);
+  Print("Disconnecting new leader and connecting old leader");
   // reconnect old leader
   config_->Reconnect(leader1);
+  Print("Old leader reconnected");
   // wait for new election
   Coroutine::Sleep(ELECTIONTIMEOUT);
   auto leader3 = config_->OneLeader();
+  Print("Asserting election");
   AssertOneLeader(leader3);
   AssertReElection(leader3, leader2);
+  Print("Asserting new election");
   // More commits
+  Print("Add more commits");
   DoAgreeAndAssertWaitSuccess(607, NSERVERS - 1);
   DoAgreeAndAssertWaitSuccess(608, NSERVERS - 1);
+  Print("Added and successfully verified");
   // Reconnect all
+  Print("Reconnecting all");
   config_->Reconnect(leader2);
+  Print("Adding a new commit and waiting on assert");
   DoAgreeAndAssertWaitSuccess(609, NSERVERS);
+  Print("Asserted new commit, done");
   Passed2();
 }
 
