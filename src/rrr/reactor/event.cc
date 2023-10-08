@@ -99,7 +99,6 @@ void Event::RecordPlace(const char* file, int line) {
 }
 
 bool Event::Test() {
-  
   verify(__debug_creator); // if this fails, the event is not created by reactor.
   if (IsReady()) {
     if (status_ == INIT) {
@@ -127,7 +126,6 @@ bool Event::Test() {
     } else if (status_ == TIMEOUT) {
       // do nothing
     } else {
-      Log_info("Checking verify for event at server");
       verify(0);
     }
     return true;
