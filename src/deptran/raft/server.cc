@@ -200,93 +200,93 @@ void RaftServer::becomeCandidate()
                             &total_votes_received
                           );
     //Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
-    Coroutine::Sleep(5000);
-    //if(event->get() == 0)
-    if(event->status_ == Event::INIT)
-      event->Wait(5000);
-    //Log_info("Server %lu -> Inside become candidate, after send request vote after wait",loc_id_);                      
-    if(event->status_ == Event::TIMEOUT)
+    mtx_.lock();
+    if(state == "candidate")
     {
-      Log_info("Server %lu -> Timeout happened for all send request votes",loc_id_);
-    }
-    else
-    {
-      
-      Log_info("Server %lu -> Got reply from all servers with total vote count %d and max term %lu",loc_id_,total_votes_received,max_return_term);
-      
-      mtx_.lock();
-      
-      if(state != "candidate")
+      mtx_.unlock();
+      Coroutine::Sleep(5000);
+      if(event->status_ == Event::INIT)
+        event->Wait(5000);
+      if(event->status_ == Event::TIMEOUT)
       {
-        //Log_info("Server %lu -> Changed state to %s while waiting for votes",loc_id_,state.c_str());
-        if(state == "leader")
-        {
-          nextIndex = vector<uint64_t>{1,1,1,1,1};
-          matchIndex = vector<pair<uint64_t,uint64_t>>{
-                                                      {0,currentTerm},
-                                                      {0,currentTerm},
-                                                      {0,currentTerm},
-                                                      {0,currentTerm},
-                                                      {0,currentTerm}
-                                                    };
-        }
-        mtx_.unlock();
-        //return;
+        Log_info("Server %lu -> Timeout happened for all send request votes",loc_id_);
       }
-      else if(max_return_term != 0)
-      { 
-      
-        /*
-          Checking for the return term
-          and breaking in case it is more than current
-          term
-        */
-        //Log_info("Server %lu -> Max return term is not zero",loc_id_);
-        if(max_return_term > currentTerm)
-        {
-          Log_info("Server %lu -> Received bigger term after requestVote. Current term is %lu and got %lu",loc_id_,currentTerm,max_return_term);
-          
-          state = "follower";
-          currentTerm = max_return_term;
-          mtx_.unlock();
-          //return;               
-        }
-        else
-        {
+      else
+      {
+        
+        Log_info("Server %lu -> Got reply from all servers with total vote count %d and max term %lu",loc_id_,total_votes_received,max_return_term);
+        
+        //mtx_.lock();
+        
+        // if(state != "candidate")
+        // {
+        //   //Log_info("Server %lu -> Changed state to %s while waiting for votes",loc_id_,state.c_str());
+        //   if(state == "leader")
+        //   {
+        //     nextIndex = vector<uint64_t>{1,1,1,1,1};
+        //     matchIndex = vector<pair<uint64_t,uint64_t>>{
+        //                                                 {0,currentTerm},
+        //                                                 {0,currentTerm},
+        //                                                 {0,currentTerm},
+        //                                                 {0,currentTerm},
+        //                                                 {0,currentTerm}
+        //                                               };
+        //   }
+        //   mtx_.unlock();
+        //   //return;
+        // }
+        mtx_.lock();
+        if(max_return_term != 0)
+        { 
+        
           /*
-          Checking for majority of votes received
-          and changing to a leader in case that happens
+            Checking for the return term
+            and breaking in case it is more than current
+            term
           */
-          if(total_votes_received >= (commo()->rpc_par_proxies_[0].size()+1)/2)
+          //Log_info("Server %lu -> Max return term is not zero",loc_id_);
+          if(max_return_term > currentTerm)
           {
-            Log_info("Server %lu -> Election supremacy. Won election in the term %lu",loc_id_,currentTerm);
-            state = "leader";
-            // nextIndex = vector<uint64_t>{1,1,1,1,1};
-            // matchIndex = vector<pair<uint64_t,uint64_t>>{
-            //                                           {0,currentTerm},
-            //                                           {0,currentTerm},
-            //                                           {0,currentTerm},
-            //                                           {0,currentTerm},
-            //                                           {0,currentTerm}
-            //                                         };
+            Log_info("Server %lu -> Received bigger term after requestVote. Current term is %lu and got %lu",loc_id_,currentTerm,max_return_term);
+            
+            state = "follower";
+            currentTerm = max_return_term;
             mtx_.unlock();
+            //return;               
           }
           else
           {
-            //Log_info("Server %lu -> Did not received majority votes",loc_id_);
+            /*
+            Checking for majority of votes received
+            and changing to a leader in case that happens
+            */
+            if(total_votes_received >= (commo()->rpc_par_proxies_[0].size()+1)/2)
+            {
+              Log_info("Server %lu -> Election supremacy. Won election in the term %lu",loc_id_,currentTerm);
+              state = "leader";
+              // nextIndex = vector<uint64_t>{1,1,1,1,1};
+              // matchIndex = vector<pair<uint64_t,uint64_t>>{
+              //                                           {0,currentTerm},
+              //                                           {0,currentTerm},
+              //                                           {0,currentTerm},
+              //                                           {0,currentTerm},
+              //                                           {0,currentTerm}
+              //                                         };
+              mtx_.unlock();
+            }
+            else
+            {
+              //Log_info("Server %lu -> Did not received majority votes",loc_id_);
+            }
           }
         }
+        mtx_.unlock();
       }
-      mtx_.unlock();
     }
-    //{
-      //std::lock_guard<std::recursive_mutex> guard(mtx_);
-    //Log_info("Server %lu -> Calling set on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
-    //if(ev->get() == 0 )
     Log_info("Server %lu -> Setting request vote ev");
     if(ev->status_ == Event::INIT)
       ev->Set(1);
-    //}
+    mtx_.unlock();
   });
 
   //Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
@@ -563,7 +563,7 @@ void RaftServer::becomeLeader()
         if(state != "leader")
         {
           mtx_.unlock();
-          Log_info("Server %lu -> State changed while sending request votes, breaking out");
+          Log_info("Server %lu -> State changed while sending heartbeats, breaking out");
           break;
         }
         auto ev_individual = Reactor::CreateSpEvent<IntEvent>();
@@ -794,6 +794,12 @@ void RaftServer::becomeLeader()
         ev_global->Set(1);
       }
     });
+    if(state != "leader")
+    {
+      mtx_.unlock();
+      Log_info("Server %lu -> Found state as not leader, stepping down",loc_id_);
+      break;
+    }
     Coroutine::Sleep(10000);
     mtx_.lock();
     if(ev_global->status_ == Event::INIT)
@@ -813,12 +819,6 @@ void RaftServer::becomeLeader()
       Log_info("Server %lu -> The entire request vote operation succeeded",loc_id_);
     }
     mtx_.lock();
-    if(state != "leader")
-    {
-      mtx_.unlock();
-      Log_info("Server %lu -> Found state as not leader, stepping down",loc_id_);
-      break;
-    }
     while(true)
     {
       uint64_t j=commitIndex+1;
