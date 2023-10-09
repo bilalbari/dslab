@@ -153,20 +153,11 @@ void RaftServer::runFollowerTimeout(){
 void RaftServer::becomeCandidate()
 {
     
-  /*
-    Getting random timeout for the sever
-  */
-  
   int electionTimeout = generateElectionTimeout();
   
   chrono::milliseconds endTimeout(electionTimeout);
   Log_info("Server %lu-> Candidate timeout is %i ",loc_id_,electionTimeout);
   
-  /*
-    Locking the mutex to get state variables
-    before sending off RPC for request vote
-  */
-
   mtx_.lock();
   state = "candidate";
   currentTerm++;
@@ -175,131 +166,86 @@ void RaftServer::becomeCandidate()
   chrono::duration<double,milli> time_spent = 
                   chrono::system_clock::now() - lastStartTime;
   auto ev = Reactor::CreateSpEvent<IntEvent>();
+  auto proxies = commo()->rpc_par_proxies_[0];
   mtx_.unlock();
 
-  //Log_info("Server %lu -> Inside become candidate, going for request vote",loc_id_);
   Coroutine::CreateRun([=](){
 
     
     mtx_.lock();
-    uint64_t max_return_term=0;
-    uint64_t total_votes_received=1;
+    uint64_t total_votes_granted = 1;
+    uint64_t max_return_term = 0;
     uint64_t tempCurrentTerm = currentTerm;
     uint64_t tempLastLogIndex = stateLog.size()-1;
     uint64_t tempLastLogTerm = stateLog[tempLastLogIndex].term;
     mtx_.unlock();
 
-    //Log_info("Server %lu -> Inside become candidate, before sending request vote",loc_id_);
-    auto event = commo()->SendRequestVote(
-                            0,
-                            tempCurrentTerm, // sending my term
-                            loc_id_,  //sending my id
-                            tempLastLogIndex, //my last log index
-                            tempLastLogTerm, // my last log term
-                            &max_return_term,
-                            &total_votes_received
-                          );
-    //Log_info("Server %lu -> Inside become candidate, after send request vote before wait",loc_id_);                      
-    mtx_.lock();
-    if(state == "candidate")
+    for(int i=0;i<proxies.size();i++)
     {
-      mtx_.unlock();
-      //Coroutine::Sleep(5000);
-      if(event->status_ == Event::INIT)
-        event->Wait(5000);
-      if(event->status_ == Event::TIMEOUT)
+      if(max_return_term > currentTerm)
       {
-        Log_info("Server %lu -> Timeout happened for all send request votes",loc_id_);
+        break;
       }
-      else
+      if(proxies[i].first != loc_id_)
       {
-        
-        Log_info("Server %lu -> Got reply from all servers with total vote count %d and max term %lu",loc_id_,total_votes_received,max_return_term);
-        
-        //mtx_.lock();
-        
-        // if(state != "candidate")
-        // {
-        //   //Log_info("Server %lu -> Changed state to %s while waiting for votes",loc_id_,state.c_str());
-        //   if(state == "leader")
-        //   {
-        //     nextIndex = vector<uint64_t>{1,1,1,1,1};
-        //     matchIndex = vector<pair<uint64_t,uint64_t>>{
-        //                                                 {0,currentTerm},
-        //                                                 {0,currentTerm},
-        //                                                 {0,currentTerm},
-        //                                                 {0,currentTerm},
-        //                                                 {0,currentTerm}
-        //                                               };
-        //   }
-        //   mtx_.unlock();
-        //   //return;
-        // }
-        mtx_.lock();
-        if(max_return_term != 0)
-        { 
-        
-          /*
-            Checking for the return term
-            and breaking in case it is more than current
-            term
-          */
-          //Log_info("Server %lu -> Max return term is not zero",loc_id_);
-          if(max_return_term > currentTerm)
-          {
-            Log_info("Server %lu -> Received bigger term after requestVote. Current term is %lu and got %lu",loc_id_,currentTerm,max_return_term);
-            
-            state = "follower";
-            currentTerm = max_return_term;
-            mtx_.unlock();
-            //return;               
-          }
-          else
-          {
-            /*
-            Checking for majority of votes received
-            and changing to a leader in case that happens
-            */
-            if(total_votes_received >= (commo()->rpc_par_proxies_[0].size()+1)/2)
+        uint64_t return_term = 0;
+        bool_t vote_granted = 0;
+        auto event = commo()->SendRequestVote(
+                              0,
+                              proxies[i].first,
+                              tempCurrentTerm, // sending my term
+                              loc_id_,  //sending my id
+                              tempLastLogIndex, //my last log index
+                              tempLastLogTerm, // my last log term
+                              &return_term,
+                              &vote_granted
+                            );
+        if(event->status_ == Event::INIT)
+          event->Wait(5000);
+        if(event->status_ == Event::TIMEOUT)
+        {
+          Log_info("Server %lu -> Timeout happened for send request votes to %lu",loc_id_,proxies[i].first);
+        }
+        else
+        {
+          Log_info("Server %lu -> Got reply from server %lu with vote count %d and term %lu",loc_id_,proxies[i].first,vote_granted,return_term);
+          if(return_term > 0)
+          { 
+            max_return_term = max(return_term,max_return_term);
+            if(vote_granted == 1)
             {
-              Log_info("Server %lu -> Election supremacy. Won election in the term %lu",loc_id_,currentTerm);
-              state = "leader";
-              // nextIndex = vector<uint64_t>{1,1,1,1,1};
-              // matchIndex = vector<pair<uint64_t,uint64_t>>{
-              //                                           {0,currentTerm},
-              //                                           {0,currentTerm},
-              //                                           {0,currentTerm},
-              //                                           {0,currentTerm},
-              //                                           {0,currentTerm}
-              //                                         };
-              mtx_.unlock();
-            }
-            else
-            {
-              //Log_info("Server %lu -> Did not received majority votes",loc_id_);
+              total_votes_granted++;
             }
           }
         }
-        mtx_.unlock();
       }
     }
-    Log_info("Server %lu -> Setting request vote ev",loc_id_);
+    mtx_.lock();
+    if(state == "candidate")
+    {
+      if(max_return_term > currentTerm)
+      {
+        Log_info("Server %lu -> Received bigger term after requestVote. Current term is %lu and got %lu",loc_id_,currentTerm,max_return_term);
+        state = "follower";
+        currentTerm = max_return_term;
+      }
+      else if(total_votes_granted >= (commo()->rpc_par_proxies_[0].size()+1)/2)
+      {
+        Log_info("Server %lu -> Election supremacy. Won election in the term %lu",loc_id_,currentTerm);
+        state = "leader";
+      }
+    }
+    mtx_.unlock();
     if(ev->status_ == Event::INIT)
       ev->Set(1);
-    mtx_.unlock();
   });
 
-  //Log_info("Server %lu -> Calling wait on outer ev inside become candidate smart pointer global %p",loc_id_,ev.get());
-  //Coroutine::Sleep(5000);
-  //if(ev->get() == 0)
-  Log_info("Server %lu -> Before wait on request vote ev");
-  if(ev->status_ == Event::INIT)
-    ev->Wait(10000);
-  Log_info("Server %lu -> After Wait on request vote ev");
-  //Log_info("Server %lu -> Inside becomeCandidate after coroutine sleep",loc_id_);
-  
   mtx_.lock();
-
+  if(ev->status_ == Event::INIT)
+  {
+    mtx_.unlock();
+    ev->Wait(15000);
+  }
   if(state != "candidate") 
   {
     mtx_.unlock();
@@ -309,7 +255,6 @@ void RaftServer::becomeCandidate()
   {
     time_spent = chrono::system_clock::now() - lastStartTime;
     mtx_.unlock();
-    //Log_info("Server %lu -> Will send votes after %f",loc_id_,(endTimeout-time_spent).count());
     Coroutine::Sleep((endTimeout-time_spent).count()*1000);
   }
   mtx_.unlock();

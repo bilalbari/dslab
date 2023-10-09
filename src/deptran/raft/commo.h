@@ -17,12 +17,13 @@ class RaftCommo : public Communicator {
   shared_ptr<IntEvent> 
   SendRequestVote(
                     parid_t par_id,
+                    siteid_t site_id,
                     uint64_t term,
                     siteid_t candidateId,
                     uint64_t lastLogIndex,
                     uint64_t lastLogTerm,
-                    uint64_t *max_return_term,
-                    uint64_t *total_votes_granted);
+                    uint64_t *return_term,
+                    bool_t *vote_granted);
 
   shared_ptr<IntEvent>
   SendAppendEntriesCombined(
