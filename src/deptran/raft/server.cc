@@ -44,61 +44,6 @@ int RaftServer::generateElectionTimeout(){
     return 250+(rand()%200);
 }
 
-void RaftServer::HandleEmptyAppendEntries(
-                            const uint64_t& term,
-                            const siteid_t& candidateId,
-                            const uint64_t& leaderCommitIndex,
-                            uint64_t* returnTerm
-                            )
-{
-  mtx_.lock();
-
-  *returnTerm = currentTerm;
-
-  if(term > currentTerm)
-  {
-    Log_info("%lli -> Received term is higher than current term, becoming a follower",loc_id_);
-    votedFor = 6;
-    lastStartTime = std::chrono::system_clock::now();
-    currentTerm = term;
-    if(state != "follower")
-    {
-      state = "follower";
-      mtx_.unlock();
-      return;
-    }
-    mtx_.unlock();
-  }
-  if(currentTerm <= term)
-  {
-    if(state != "follower")
-    {
-      Log_info("%lli -> State is not follower, switching to follower",loc_id_);
-      votedFor = 6;
-      lastStartTime = std::chrono::system_clock::now();
-      currentTerm = term;
-      state = "follower";
-    }
-    else
-    {
-      lastStartTime = std::chrono::system_clock::now();
-    }
-  }
-  if(leaderCommitIndex > commitIndex)
-  {
-    uint64_t getLastLogIndex = stateLog.size()-1;
-    commitIndex = min(leaderCommitIndex,getLastLogIndex);
-  }
-  while((lastApplied+1) <= commitIndex)
-  {
-    Log_info("Server %lu -> Found last applied behind, increasing commit index",loc_id_);
-    app_next_(*(stateLog[lastApplied+1].cmd));
-    lastApplied++;
-  }
-  mtx_.unlock();
-  Log_info("%lli -> Returning my term -> %lli from empty append entry",loc_id_,*returnTerm);
-}
-
 void RaftServer::convertToFollower(const uint64_t& term){
 
   Log_info("Starting as follower for server %lli",loc_id_);
@@ -180,6 +125,7 @@ void RaftServer::becomeCandidate()
     uint64_t tempLastLogTerm = stateLog[tempLastLogIndex].term;
     mtx_.unlock();
 
+    Log_info("Server %lu -> Contesting election in term %lu",currentTerm);
     for(int i=0;i<proxies.size();i++)
     {
       if(max_return_term > currentTerm)
@@ -258,57 +204,6 @@ void RaftServer::becomeCandidate()
     Coroutine::Sleep((endTimeout-time_spent).count()*1000);
   }
   mtx_.unlock();
-}
-
-void RaftServer::HandleAppendEntries(
-                      const siteid_t& candidateId,
-                      const uint64_t& prevLogIndex,
-                      const uint64_t& prevLogTerm,
-                      const uint64_t& term,
-                      const uint64_t& leaderCommitIndex,
-                      const MarshallDeputy& md_cmd,
-                      uint64_t* returnTerm,
-                      bool_t* followerAppendOK
-                      )
-{
-  std::lock_guard<std::recursive_mutex> guard(mtx_);
-  *returnTerm = currentTerm;
-  std::shared_ptr<Marshallable> cmd = const_cast<MarshallDeputy&>(md_cmd).sp_data_;
-  Log_info("Server %lu -> Received append entry with leader commitIndex %lu",leaderCommitIndex);
-  if(term < currentTerm)
-  {
-    Log_info("Server %lu -> Received append entry with less term, sending false",loc_id_);
-    *followerAppendOK = false;
-    return;
-  }
-  if(stateLog.size() >= prevLogIndex)
-  {
-    if(stateLog[prevLogIndex].term != prevLogTerm)
-    {
-      Log_info("Server %lu -> Previous log term does not match for append entry from %lu. Sending false",loc_id_,candidateId);
-      *followerAppendOK = false;
-      return;
-    }
-    stateLog.erase(std::next(stateLog.begin(),prevLogIndex+1),stateLog.end());
-    stateLog.push_back(LogEntry(cmd,term));
-    *followerAppendOK = true;
-    Log_info("Server %lu -> Appended log and updated commit index to %lu",loc_id_,commitIndex);
-  }
-  else
-  {
-    Log_info("Server %lu -> Log size is smaller than sent logs. Sending false",loc_id_);
-    *followerAppendOK = false;
-    return;
-  }
-  if(leaderCommitIndex > commitIndex)
-      commitIndex = min(leaderCommitIndex,stateLog.size()-1);
-  while((lastApplied+1) <= commitIndex)
-  {
-    Log_info("Server %lu -> Found last applied behind, increasing commit index",loc_id_);
-    app_next_(*(stateLog[lastApplied+1].cmd));
-    lastApplied++;
-  }
-  Log_info("Server %lu -> Append entry from %lu processed",loc_id_,candidateId);
 }
 
 bool RaftServer::checkMoreUpdated(
@@ -500,8 +395,8 @@ void RaftServer::becomeLeader()
     mtx_.lock();
     uint64_t lastLogIndex = stateLog.size()-1;
     mtx_.unlock();
-    auto ev_global = Reactor::CreateSpEvent<IntEvent>();
-    Coroutine::CreateRun([=](){
+    Coroutine::CreateRun([=]
+    {
       for(int i=0;i<proxies.size();i++)
       {
         mtx_.lock();
@@ -513,257 +408,194 @@ void RaftServer::becomeLeader()
         }
         auto ev_individual = Reactor::CreateSpEvent<IntEvent>();
         mtx_.unlock();
-      
         Log_info("Server %lu -> Sending global append entries to %lu",loc_id_,proxies[i].first);
-          //Log_info("Server %lu -> Just before entering outer coroutine for sending entries",loc_id_);
-        Coroutine::CreateRun([=]
+        if(proxies[i].first != loc_id_)
         {
-          if(proxies[i].first != loc_id_)
+          mtx_.lock();
+          uint64_t tempNextIndex = nextIndex[i];
+          mtx_.unlock();
+          Log_info("Server %lu -> tempNextIndex is %lu and lastLogIndex is %lu",loc_id_,tempNextIndex,lastLogIndex);
+          if(tempNextIndex <= lastLogIndex)
           {
-        
-            //Log_info("Server %lu -> Entered coroutine block for sending append entries with current nextIndex %d and matchIndex %d",loc_id_,nextIndex[i],matchIndex[i]);
+            Log_info("Server %lu -> Sending append entry to %lu",loc_id_,proxies[i].first);
             mtx_.lock();
-            uint64_t tempNextIndex = nextIndex[i];
+            uint64_t returnTerm = 0;
+            uint64_t prevLogIndex = nextIndex[i]-1;
+            uint64_t prevLogTerm = stateLog[prevLogIndex].term;
+            uint64_t currentNextIndex= nextIndex[i];
+            uint64_t currentLogTerm = stateLog[currentNextIndex].term;
+            uint64_t followerLogSize = stateLog.size();
+            std::shared_ptr<Marshallable> my_shared = stateLog[currentNextIndex].cmd;
+            bool_t followerAppendOK = 0;
+            uint64_t isHeartbeat = 0;
+            Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry for %lu",loc_id_,proxies[i].first);
             mtx_.unlock();
-            Log_info("Server %lu -> tempNextIndex is %lu and lastLogIndex is %lu",loc_id_,tempNextIndex,lastLogIndex);
-            if(tempNextIndex <= lastLogIndex)
+            auto event = commo()->SendAppendEntriesCombined(
+                                        0,
+                                        proxies[i].first,
+                                        loc_id_,
+                                        prevLogIndex,
+                                        prevLogTerm,
+                                        currentLogTerm,
+                                        currentTerm,
+                                        commitIndex,
+                                        isHeartbeat,
+                                        my_shared,
+                                        &followerLogSize,
+                                        &returnTerm,
+                                        &followerAppendOK
+                                      );
+            Log_info("Server %lu -> Inside start consensus before calling sleep for %lu",loc_id_,proxies[i].first);                        
+            Coroutine::Sleep(5000);
+            Log_info("Server %lu -> Inside start consensus after calling sleep before wait for %lu",loc_id_,proxies[i].first);                        
+            mtx_.lock();
+            if(event->status_ == Event::INIT)
             {
-              Log_info("Server %lu -> Sending append entry to %lu",loc_id_,proxies[i].first);
-              uint64_t iteration = 1;
-              while(tempNextIndex <= lastLogIndex)
-              {
-                Log_info("Server %lu -> Inside while itr %lu for entry %lu to server %lu",loc_id_,iteration,tempNextIndex,proxies[i].first);
-                mtx_.lock();
-                uint64_t returnTerm = 0;
-                uint64_t prevLogIndex = nextIndex[i]-1;
-                uint64_t prevLogTerm = stateLog[prevLogIndex].term;
-                uint64_t currentNextIndex= nextIndex[i];
-                uint64_t currentLogTerm = stateLog[currentNextIndex].term;
-                uint64_t followerLogSize = stateLog.size();
-                std::shared_ptr<Marshallable> my_shared = stateLog[currentNextIndex].cmd;
-                bool_t followerAppendOK = 0;
-                uint64_t isHeartbeat = 0;
-                Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry for %lu",loc_id_,proxies[i].first);
-                mtx_.unlock();
-                
-                auto event = commo()->SendAppendEntriesCombined(
-                                          0,
-                                          proxies[i].first,
-                                          loc_id_,
-                                          prevLogIndex,
-                                          prevLogTerm,
-                                          currentLogTerm,
-                                          currentTerm,
-                                          commitIndex,
-                                          isHeartbeat,
-                                          my_shared,
-                                          &followerLogSize,
-                                          &returnTerm,
-                                          &followerAppendOK
-                                        );
-                Log_info("Server %lu -> Inside start consensus for while itr %lu before calling sleep for %lu",loc_id_,iteration,proxies[i].first);                        
-                Coroutine::Sleep(5000);
-                Log_info("Server %lu -> Inside start consensus for while itr %lu after calling sleep before wait for %lu",loc_id_,iteration,proxies[i].first);                        
-                mtx_.lock();
-                if(event->status_ == Event::INIT)
-                {
-                  mtx_.unlock();
-                  event->Wait(3000);
-                }
-                mtx_.unlock();
-                Log_info("Server %lu -> Inside start consensus for while itr %lu after calling sleep after wait for %lu",loc_id_,iteration,proxies[i].first);
-                mtx_.lock();
-                //Log_info("Server %lu -> Inside start consensus after calling individual wait",loc_id_);
-                Log_info("Server %lu -> Got back return term %lu from %lu",loc_id_,returnTerm,proxies[i].first);
-                if(event->status_ == Event::TIMEOUT)
-                {
-                  Log_info("Server %lu -> Append entry to %lu timed out",loc_id_,proxies[i].first);
-                }
-                else
-                {
-                  //Log_info("AppendEntry from %lu to %lu timed out",proxies[i].first,loc_id_);
-                  Log_info("Server %lu -> Got response from %lu -> %lu as term, %d as didAppend",loc_id_,proxies[i].first,returnTerm,followerAppendOK);
-                  if(returnTerm > currentTerm)
-                  {
-                    Log_info("Server %lu -> Received greater term from append entry response",loc_id_);
-                    state = "follower";
-                    lastStartTime = std::chrono::system_clock::now();
-                    votedFor = 6;
-                    currentTerm = returnTerm;
-                    mtx_.unlock();
-                    //return;
-                  }
-                  else
-                  {
-                    if(followerAppendOK == 1)
-                    {
-                      Log_info("Server %lu -> Append entry for %lu accepted",loc_id_,proxies[i].first);
-                      matchIndex[i] = {currentNextIndex,currentTerm};
-                      Log_info("Server %lu -> Able to increase match index value",loc_id_);
-                      currentNextIndex++;
-                      nextIndex[i] = currentNextIndex;
-                      Log_info("Sever %lu -> Increased nextIndex value to %lu and match index to %lu",nextIndex[i],matchIndex[i].first);
-                    }
-                    else if( returnTerm != 0)
-                    {
-                      Log_info("Server %lu -> Append entry for %lu rejected",loc_id_,proxies[i].first);
-                      if(currentNextIndex>1)
-                      {
-                        Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
-                        currentNextIndex--;
-                        nextIndex[i] = min(currentNextIndex,followerLogSize);
-                      }
-                    }
-                  }
-                }
-                tempNextIndex = nextIndex[i];
-                if(state != "leader")
-                {
-                  mtx_.unlock();
-                  break;
-                }
-                iteration++;
-                mtx_.unlock();
-              }
+              mtx_.unlock();
+              event->Wait(10000);
+            }
+            mtx_.unlock();
+            Log_info("Server %lu -> Inside start consensus after calling sleep after wait for %lu",loc_id_,proxies[i].first);
+            mtx_.lock();
+            Log_info("Server %lu -> Got back return term %lu from %lu",loc_id_,returnTerm,proxies[i].first);
+            if(event->status_ == Event::TIMEOUT)
+            {
+              Log_info("Server %lu -> Append entry to %lu timed out",loc_id_,proxies[i].first);
             }
             else
             {
-              //Log_info("Server %lu -> Sending heartbeats to %lu",loc_id_,proxies[i].first);
-              mtx_.lock();
-              uint64_t returnTerm = 0;
-              uint64_t prevLogIndex = nextIndex[i]-1;
-              uint64_t prevLogTerm = stateLog[prevLogIndex].term;
-              uint64_t currentNextIndex= nextIndex[i];
-              Marshallable* m = new CmdData();
-              uint64_t followerLogSize = stateLog.size();
-              std::shared_ptr<Marshallable> my_shared(m);
-              bool_t followerAppendOK = 0;
-              uint64_t isHeartbeat = 1;
-              mtx_.unlock();
-              //Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry as heartbeat",loc_id_);
-              auto event = commo()->SendAppendEntriesCombined(
-                                          0,
-                                          proxies[i].first,
-                                          loc_id_,
-                                          prevLogIndex,
-                                          prevLogTerm,
-                                          currentTerm,
-                                          currentTerm,
-                                          commitIndex,
-                                          isHeartbeat,
-                                          my_shared,
-                                          &followerLogSize,
-                                          &returnTerm,
-                                          &followerAppendOK
-                                        );
-              //Log_info("Server %lu -> After calling append entry as heartbeat before individual wait",loc_id_);
-              Coroutine::Sleep(5000);
-              mtx_.lock();
-              if(event->status_ == Event::INIT)
+              //Log_info("AppendEntry from %lu to %lu timed out",proxies[i].first,loc_id_);
+              Log_info("Server %lu -> Got response from %lu -> %lu as term, %d as didAppend",loc_id_,proxies[i].first,returnTerm,followerAppendOK);
+              if(returnTerm > currentTerm)
               {
+                Log_info("Server %lu -> Received greater term from append entry response",loc_id_);
+                state = "follower";
+                lastStartTime = std::chrono::system_clock::now();
+                votedFor = 6;
+                currentTerm = returnTerm;
                 mtx_.unlock();
-                event->Wait(5000);
-              }
-              //Log_info("Server %lu -> Got back return term %lu from %lu",loc_id_,returnTerm,proxies[i].first);
-              if(event->status_ == Event::TIMEOUT)
-              {
-                Log_info("Server %lu -> Append entry to %lu timed out",loc_id_,proxies[i].first);
+                //return;
               }
               else
               {
-                //Log_info("AppendEntry from %lu to %lu timed out",proxies[i].first,loc_id_);
-                //Log_info("Server %lu -> Got response from %lu -> %lu as term, %d as didAppend",loc_id_,proxies[i].first,returnTerm,followerAppendOK);
-                mtx_.lock();
-                if(returnTerm != 0 && returnTerm > currentTerm)
+                if(followerAppendOK == 1)
                 {
-                  Log_info("Server %lu -> Received greater term from append entry response",loc_id_);
-                  state = "follower";
-                  currentTerm = returnTerm;
-                  mtx_.unlock();
-                  //return;
+                  Log_info("Server %lu -> Append entry for %lu accepted",loc_id_,proxies[i].first);
+                  matchIndex[i] = {currentNextIndex,currentTerm};
+                  Log_info("Server %lu -> Able to increase match index value",loc_id_);
+                  currentNextIndex++;
+                  nextIndex[i] = currentNextIndex;
+                  Log_info("Sever %lu -> Increased nextIndex value to %lu and match index to %lu",nextIndex[i],matchIndex[i].first);
                 }
-                else
+                else if( returnTerm != 0)
                 {
-                  if(followerAppendOK)
+                  Log_info("Server %lu -> Append entry for %lu rejected",loc_id_,proxies[i].first);
+                  if(currentNextIndex>1)
                   {
-                    //Log_info("Server %lu -> Append entry for %lu accepted",loc_id_,proxies[i].first);
-                    matchIndex[i] = {lastLogIndex,currentTerm};
-                    //Log_info("Server %lu -> Able to increase match index value",loc_id_);
-                    //nextIndex[i] = currentNextIndex + 1;
-                    //Log_info("Sever %lu -> Increased nextIndex value to %d and match index to %d",nextIndex[i],matchIndex[i]);
-                  }
-                  else if(returnTerm != 0)
-                  {
-                    //Log_info("Server %lu -> Append entry for %lu rejected",loc_id_,proxies[i].first);
-                    if(currentNextIndex>1)
-                    {
-                      //Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
-                      nextIndex[i] = min(currentNextIndex-1,followerLogSize);
-                    }
+                    Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
+                    currentNextIndex--;
+                    nextIndex[i] = min(currentNextIndex,followerLogSize);
                   }
                 }
-                mtx_.unlock();
               }
             }
-          }
-          Log_info("Server %lu -> Before set in ev individual",loc_id_);
-          mtx_.lock();
-          if(ev_individual->status_ == Event::INIT)
-          {
             mtx_.unlock();
-            ev_individual->Set(1);
           }
-          mtx_.unlock();
-        });
-        mtx_.lock();
-        if(ev_individual->status_ == Event::INIT)
-        {
-          mtx_.unlock();
-          Log_info("Server %lu -> Before wait on ev individual for %lu",loc_id_,proxies[i].first);
-          ev_individual->Wait(40000);
-        }
-        mtx_.unlock();
-        Log_info("Server %lu -> After wait on ev individual for %lu",loc_id_,proxies[i].first);                        
-        if(ev_individual->status_ == Event::TIMEOUT)
-        {
-          Log_info("Server %lu -> Log replication to %lu failed, will try later, moving to next one",loc_id_,proxies[i].first);
-        }
-        else
-        {
-          Log_info("Server %lu -> Log replication to %lu succeeded",loc_id_,proxies[i].first);
+          else
+          {
+            //Log_info("Server %lu -> Sending heartbeats to %lu",loc_id_,proxies[i].first);
+            mtx_.lock();
+            uint64_t returnTerm = 0;
+            uint64_t prevLogIndex = nextIndex[i]-1;
+            uint64_t prevLogTerm = stateLog[prevLogIndex].term;
+            uint64_t currentNextIndex= nextIndex[i];
+            Marshallable* m = new CmdData();
+            uint64_t followerLogSize = stateLog.size();
+            std::shared_ptr<Marshallable> my_shared(m);
+            bool_t followerAppendOK = 0;
+            uint64_t isHeartbeat = 1;
+            mtx_.unlock();
+            //Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry as heartbeat",loc_id_);
+            auto event = commo()->SendAppendEntriesCombined(
+                                        0,
+                                        proxies[i].first,
+                                        loc_id_,
+                                        prevLogIndex,
+                                        prevLogTerm,
+                                        currentTerm,
+                                        currentTerm,
+                                        commitIndex,
+                                        isHeartbeat,
+                                        my_shared,
+                                        &followerLogSize,
+                                        &returnTerm,
+                                        &followerAppendOK
+                                      );
+            //Log_info("Server %lu -> After calling append entry as heartbeat before individual wait",loc_id_);
+            Coroutine::Sleep(5000);
+            mtx_.lock();
+            if(event->status_ == Event::INIT)
+            {
+              mtx_.unlock();
+              event->Wait(10000);
+            }
+            //Log_info("Server %lu -> Got back return term %lu from %lu",loc_id_,returnTerm,proxies[i].first);
+            if(event->status_ == Event::TIMEOUT)
+            {
+              Log_info("Server %lu -> Append entry to %lu timed out",loc_id_,proxies[i].first);
+            }
+            else
+            {
+              //Log_info("AppendEntry from %lu to %lu timed out",proxies[i].first,loc_id_);
+              //Log_info("Server %lu -> Got response from %lu -> %lu as term, %d as didAppend",loc_id_,proxies[i].first,returnTerm,followerAppendOK);
+              mtx_.lock();
+              if(returnTerm != 0 && returnTerm > currentTerm)
+              {
+                Log_info("Server %lu -> Received greater term from append entry response",loc_id_);
+                state = "follower";
+                currentTerm = returnTerm;
+                mtx_.unlock();
+                //return;
+              }
+              else
+              {
+                if(followerAppendOK)
+                {
+                  //Log_info("Server %lu -> Append entry for %lu accepted",loc_id_,proxies[i].first);
+                  matchIndex[i] = {lastLogIndex,currentTerm};
+                  //Log_info("Server %lu -> Able to increase match index value",loc_id_);
+                  //nextIndex[i] = currentNextIndex + 1;
+                  //Log_info("Sever %lu -> Increased nextIndex value to %d and match index to %d",nextIndex[i],matchIndex[i]);
+                }
+                else if(returnTerm != 0)
+                {
+                  //Log_info("Server %lu -> Append entry for %lu rejected",loc_id_,proxies[i].first);
+                  if(currentNextIndex>1)
+                  {
+                    //Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
+                    nextIndex[i] = min(currentNextIndex-1,followerLogSize);
+                  }
+                }
+              }
+              mtx_.unlock();
+            }
+          }
         }
       }
-      if(ev_global->status_ == Event::INIT)
-      {
-        Log_info("Server %lu -> Before set on ev_global");
-        ev_global->Set(1);
-      }
+      if(ev->status_ == Event::INIT)
+        ev->Set(1);
     });
+    if(ev->status_ == Event::INIT)
+      ev->Wait(40000);
+    
     if(state != "leader")
     {
       mtx_.unlock();
       Log_info("Server %lu -> Found state as not leader, stepping down",loc_id_);
       break;
     }
-    Coroutine::Sleep(10000);
-    mtx_.lock();
-    if(ev_global->status_ == Event::INIT)
-    {
-      mtx_.unlock();
-      Log_info("Server %lu -> Before wait on ev global",loc_id_);
-      ev_global->Wait(150000);
-      Log_info("Server %lu -> After ev global",loc_id_);                        
-    }
-    mtx_.unlock();
-    if(ev_global->status_ == Event::TIMEOUT)
-    {
-      Log_info("Server %lu -> The entire request vote operation could not complete, will try later after timeout",loc_id_);
-    }
-    else
-    {
-      Log_info("Server %lu -> The entire request vote operation succeeded",loc_id_);
-    }
-    mtx_.lock();
+    
+    
     while(true)
     {
       uint64_t j=commitIndex+1;
@@ -874,8 +706,6 @@ bool RaftServer::Start(shared_ptr<Marshallable> &cmd,
     stateLog.push_back(LogEntry(cmd,currentTerm));
     uint64_t getLastLogIndex = (stateLog.size()-1);
     *index = getLastLogIndex;
-    //Log_info("Server %lu -> Appended Log. Starting consensus from leader",loc_id_);
-    //Log_info("Server %lu -> End of start. Returning true");
     return true;
   }
 }

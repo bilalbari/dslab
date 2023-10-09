@@ -39,47 +39,6 @@ void RaftServiceImpl::HandleRequestVote(const uint64_t& term,
     Log_info("Server %lu -> Service block - Back to request vote call for %lu with vote as %d and returnTerm as %lli",svr_->loc_id_,candidateId,*vote_granted,*returnTerm);
     defer->reply();
 }
-  
-void RaftServiceImpl::HandleEmptyAppendEntries(
-                                            const uint64_t& term,
-                                            const siteid_t& candidateId,
-                                            const uint64_t& leaderCommitIndex,                
-                                            uint64_t* returnTerm,
-                                            rrr::DeferredReply* defer) {
-    Log_info("Server %lu -> Received empty append entries for %lli",svr_->loc_id_,candidateId);
-    svr_->HandleEmptyAppendEntries(
-                        term,
-                        candidateId,
-                        leaderCommitIndex,
-                        returnTerm
-                                    );
-    defer->reply();
-} 
-
-void RaftServiceImpl::HandleAppendEntries(
-                                        const siteid_t& candidateId,
-                                        const uint64_t& prevLogIndex,
-                                        const uint64_t& prevLogTerm,
-                                        const uint64_t& term,
-                                        const uint64_t& leaderCommitIndex,
-                                        const MarshallDeputy& md_cmd,
-                                        uint64_t* returnTerm,
-                                        bool_t* followerAppendOK,
-                                        rrr::DeferredReply* defer) {
-  Log_info("Server %lu -> Received Append entries from %lu",svr_->loc_id_,candidateId);
-  svr_->HandleAppendEntries(
-                        candidateId,
-                        prevLogIndex,
-                        prevLogTerm,
-                        term,
-                        leaderCommitIndex,
-                        md_cmd,
-                        returnTerm,
-                        followerAppendOK
-                    );
-  Log_info("Server %lu -> Handled append entry from %lu successfully",svr_->loc_id_,candidateId);
-  defer->reply();
-}
 
 void RaftServiceImpl::HandleAppendEntriesCombined(
                                         const siteid_t& candidateId,

@@ -50,19 +50,6 @@ class RaftServiceImpl : public RaftService {
     *vote_granted = 0;
   }
 
-  RpcHandler( AppendEntries, 8,
-              const siteid_t&, candidateId,
-              const uint64_t&, prevLogIndex,
-              const uint64_t&, prevLogTerm,
-              const uint64_t&, term,
-              const uint64_t&, leaderCommitIndex,
-              const MarshallDeputy&, md_cmd,
-              uint64_t*, returnTerm,
-              bool_t*, followerAppendOK) {
-    *followerAppendOK = false;
-    *returnTerm = 0;
-  }
-
   RpcHandler( AppendEntriesCombined, 11,
               const siteid_t&, candidateId,
               const uint64_t&, prevLogIndex,
@@ -78,14 +65,6 @@ class RaftServiceImpl : public RaftService {
     *followerLogSize = 1;
     *returnTerm = 0;
     *followerAppendOK = 0;
-  }
-
-  RpcHandler( EmptyAppendEntries, 4,
-              const uint64_t&, term,
-              const siteid_t&, candiateId,
-              const uint64_t&, leaderCommitIndex,
-              uint64_t*, returnTerm){
-    *returnTerm = 0;
   }
 
   RpcHandler(HelloRpc, 2, const string&, req, string*, res) {
