@@ -42,27 +42,6 @@ class RaftCommo : public Communicator {
                             bool_t* followerAppendOK);
 
   shared_ptr<IntEvent> 
-  SendEmptyAppendEntries(
-                          parid_t par_id,
-                          uint64_t term,
-                          siteid_t candidateId,
-                          uint64_t leaderCommitIndex,
-                          uint64_t *maxReturnTerm);
-
-  shared_ptr<IntEvent> 
-  SendAppendEntries(    
-                      parid_t par_id,
-                      siteid_t site_id,
-                      siteid_t candidateId,
-                      uint64_t prevLogIndex,
-                      uint64_t prevLogTerm,
-                      uint64_t term,
-                      uint64_t commitIndex,
-                      shared_ptr<Marshallable> cmd,
-                      uint64_t *returnTerm,
-                      bool_t *followerAppendOK);
-
-  shared_ptr<IntEvent> 
   SendString( parid_t par_id, 
               siteid_t site_id, 
               const string& msg, 
