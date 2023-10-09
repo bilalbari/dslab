@@ -17,12 +17,13 @@ RaftCommo::RaftCommo(PollMgr* poll) : Communicator(poll) {
 shared_ptr<IntEvent> 
 RaftCommo::SendRequestVote(
                             parid_t par_id,
+                            siteid_t site_id,
                             uint64_t term,
                             siteid_t candidateId,
                             uint64_t lastLogIndex,
                             uint64_t lastLogTerm,
-                            uint64_t* max_return_term,
-                            uint64_t* total_votes_granted) 
+                            uint64_t* return_term,
+                            bool_t* vote_granted) 
 {
   /*
    * Example code for sending a single RPC to server at site_id
@@ -31,44 +32,24 @@ RaftCommo::SendRequestVote(
   Log_info("Server %lu -> Commo- Inside request vote",candidateId);
 
   auto proxies = rpc_par_proxies_[par_id];
-  uint64_t count = 0;
-  uint64_t *pointer_to_count = &count;
-  
-  auto ev_total = Reactor::CreateSpEvent<IntEvent>();
+  auto ev = Reactor::CreateSpEvent<IntEvent>();
   
   for (auto& p : proxies)
   {
-    RaftProxy *proxy = (RaftProxy*) p.second;
-    FutureAttr fuattr;
-      
-    if (p.first != candidateId) 
+    if(p.first == site_id)
     {
+      RaftProxy *proxy = (RaftProxy*) p.second;
+      FutureAttr fuattr;
       Log_info("Server %lu -> Commo - Calling request vote to %lli",candidateId,p.first);
-      
       fuattr.callback = [=](Future* fu) 
       {
-      
         std::recursive_mutex mutex_;
         std::lock_guard<std::recursive_mutex> guard(mutex_);
-        uint64_t returnTerm = 0;
-        bool_t vote_granted = 0;
-
-        fu->get_reply() >> returnTerm;
-        fu->get_reply() >> vote_granted;
-        if(vote_granted == 1)
-        {
-          (*total_votes_granted)++;
-        }
-        (*max_return_term) = max(returnTerm,*max_return_term);
-        (*pointer_to_count)++;
-        if((*pointer_to_count) >= 4)
-        {
-          if(ev_total->get() == 0)
-            ev_total->Set(1);
-        }
+        fu->get_reply() >> *return_term;
+        fu->get_reply() >> *vote_granted;
+        ev->Set(1);
       };
-      
-      Call_Async( 
+      Call_Async(
                 proxy, 
                 RequestVote, 
                 term, 
@@ -79,7 +60,7 @@ RaftCommo::SendRequestVote(
               );
     }
   }
-  return ev_total;
+  return ev;
 }
 
 shared_ptr<IntEvent>
