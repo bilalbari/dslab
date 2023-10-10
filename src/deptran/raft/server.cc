@@ -59,7 +59,6 @@ void RaftServer::runFollowerTimeout(){
 
   int electionTimeout = generateElectionTimeout();
 
-  //Log_info("Timeout for server %lli is %i",loc_id_,electionTimeout);
   chrono::milliseconds endTimeout(electionTimeout);
 
   mtx_.lock();
@@ -81,7 +80,6 @@ void RaftServer::runFollowerTimeout(){
 
   mtx_.lock();
 
-  //Log_info("Server %lu ->Timeout completed as follower. Switching to candidate",loc_id_);
   state = "candidate";
 
   mtx_.unlock();
@@ -132,7 +130,7 @@ void RaftServer::becomeCandidate()
                             &return_term,
                             &vote_granted
                           );
-      //if(event->status_ == Event::INIT)
+      
       event->Wait(10000);
       mtx_.lock();
       if(event->status_ == Event::TIMEOUT)
@@ -164,7 +162,6 @@ void RaftServer::becomeCandidate()
       mtx_.unlock();
     }
   }
-  Log_info("Server %lu -> Outside for with total votes %lu and max_return_term %lu",loc_id_,total_votes_granted,max_return_term);
   mtx_.lock();
   if(state == "candidate")
   {
@@ -233,7 +230,6 @@ void RaftServer::HandleAppendEntriesCombined(
   {
     if(state != "follower")
     {
-      //Log_info("%lli -> State is not follower, switching to follower",loc_id_);
       votedFor = 6;
       lastStartTime = std::chrono::system_clock::now();
       currentTerm = leaderCurrentTerm;
@@ -307,7 +303,6 @@ void RaftServer::HandleRequestVote(
     {
       if(checkMoreUpdated(lastLogIndex, lastLogTerm))
       {
-        //Log_info("Server %lu -> Vote granted to %lli",loc_id_,candidateId);
         *vote_granted = 1;
         votedFor = candidateId;
         lastStartTime = std::chrono::system_clock::now();
