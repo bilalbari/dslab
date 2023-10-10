@@ -1,3 +1,4 @@
+
 #include "test.h"
 #include "../../kv/server.h"
 #include "../../kv/client.h"
@@ -372,21 +373,30 @@ int RaftLabTest::testInitialElection(void) {
   // Initial election does not need extra time 
   // Coroutine::Sleep(ELECTIONTIMEOUT);
   int leader = config_->OneLeader();
+  //Print("Got leader value as %d",leader);
+  //Print("Trying to assert one leader");
   AssertOneLeader(leader);
+  //Print("Assertion passed");
   // calculate RPC count for initial election for later use
   init_rpcs_ = 0;
   for (int i = 0; i < NSERVERS; i++) {
     init_rpcs_ += config_->RpcCount(i);
   }
+  //Print("Got total RPC");
   // Does everyone agree on the term number?
   uint64_t term = config_->OneTerm();
+  //Print("Checked if everybody has same term number, got %lu",term);
   Assert2(term != -1, "servers disagree on term number");
   // Sleep for a while
+  //Print("Starting coroutine for election timeout");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   // Does the term stay the same after a while if there's no failures?
+  //Print("Checking if everybody still has same term number");
   Assert2(config_->OneTerm() == term, "unexpected term change");
   // Is the same server still the only leader?
+  //Print("Checking if old leader is still leader");
   AssertOneLeader(config_->OneLeader(leader));
+  //Print("Checked, looks good");
   Passed2();
 }
 
@@ -444,24 +454,31 @@ int RaftLabTest::testFailAgree(void) {
   // disconnect 2 followers
   auto leader = config_->OneLeader();
   AssertOneLeader(leader);
+  Print("Asserted one leader");
   Log_debug("disconnecting two followers leader");
   config_->Disconnect((leader + 1) % NSERVERS);
   config_->Disconnect((leader + 2) % NSERVERS);
+  Print("Disconnect two servers");
   // Agreement despite 2 disconnected servers
   Log_debug("try commit a few commands after disconnect");
   DoAgreeAndAssertIndex(401, NSERVERS - 2, index_++);
   DoAgreeAndAssertIndex(402, NSERVERS - 2, index_++);
+  Print("Asserted two commits");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   DoAgreeAndAssertIndex(403, NSERVERS - 2, index_++);
   DoAgreeAndAssertIndex(404, NSERVERS - 2, index_++);
+  Print("Asseted two more commits");
   // reconnect followers
   Log_debug("reconnect servers");
   config_->Reconnect((leader + 1) % NSERVERS);
   config_->Reconnect((leader + 2) % NSERVERS);
+  Print("Reconnected two more servers");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   Log_debug("try commit a few commands after reconnect");
+  Print("Asserting check for two disconnected servers");
   DoAgreeAndAssertWaitSuccess(405, NSERVERS);
   DoAgreeAndAssertWaitSuccess(406, NSERVERS);
+  Print("Asserted check for two disconnected servers");
   Passed2();
 }
 
@@ -497,34 +514,50 @@ int RaftLabTest::testRejoin(void) {
   // disconnect leader
   auto leader1 = config_->OneLeader();
   AssertOneLeader(leader1);
+  Print("Asserting leader, got one");
   config_->Disconnect(leader1);
+  Print("Disconnected leader");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   // Make old leader try to agree on some entries (these should not commit)
   uint64_t index, term;
+  Print("Making old leader trying to assert some commands, should not commit");
   AssertStartOk(config_->Start(leader1, 602, &index, &term));
   AssertStartOk(config_->Start(leader1, 603, &index, &term));
   AssertStartOk(config_->Start(leader1, 604, &index, &term));
   // New leader commits, successfully
+  Print("New leader successfully commits");
   DoAgreeAndAssertWaitSuccess(605, NSERVERS - 1);
   DoAgreeAndAssertWaitSuccess(606, NSERVERS - 1);
+  Print("New leader will be disconnected");
   // Disconnect new leader
   auto leader2 = config_->OneLeader();
+  Print("Asserting only one leader exists");
   AssertOneLeader(leader2);
   AssertReElection(leader2, leader1);
+  Print("Asserting reelection of new leader");
   config_->Disconnect(leader2);
+  Print("Disconnecting new leader and connecting old leader");
   // reconnect old leader
   config_->Reconnect(leader1);
+  Print("Old leader reconnected");
   // wait for new election
   Coroutine::Sleep(ELECTIONTIMEOUT);
   auto leader3 = config_->OneLeader();
+  Print("Asserting election");
   AssertOneLeader(leader3);
   AssertReElection(leader3, leader2);
+  Print("Asserting new election");
   // More commits
+  Print("Add more commits");
   DoAgreeAndAssertWaitSuccess(607, NSERVERS - 1);
   DoAgreeAndAssertWaitSuccess(608, NSERVERS - 1);
+  Print("Added and successfully verified");
   // Reconnect all
+  Print("Reconnecting all");
   config_->Reconnect(leader2);
+  Print("Adding a new commit and waiting on assert");
   DoAgreeAndAssertWaitSuccess(609, NSERVERS);
+  Print("Asserted new commit, done");
   Passed2();
 }
 
@@ -622,16 +655,20 @@ int RaftLabTest::testBackup(void) {
   Init2(8, "Leader backs up quickly over incorrect follower logs");
   // disconnect 3 servers that are not the leader
   int leader1 = config_->OneLeader();
+  Print("Asserting one leader");
   AssertOneLeader(leader1);
   Log_debug("disconnect 3 followers");
+  Print("Disconnecting 3 other than leader");
   config_->Disconnect((leader1 + 2) % NSERVERS);
   config_->Disconnect((leader1 + 3) % NSERVERS);
   config_->Disconnect((leader1 + 4) % NSERVERS);
   // Start() a bunch of commands that won't be committed
   uint64_t index, term;
+  Print("Asserting 50 commits");
   for (int i = 0; i < 50; i++) {
     AssertStartOk(config_->Start(leader1, 800 + i, &index, &term));
   }
+  Print("Asserted 50 commits");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   // disconnect the leader and its 1 follower, then reconnect the 3 servers
   Log_debug("disconnect the leader and its 1 follower, reconnect the 3 followers");
@@ -640,27 +677,33 @@ int RaftLabTest::testBackup(void) {
   config_->Reconnect((leader1 + 2) % NSERVERS);
   config_->Reconnect((leader1 + 3) % NSERVERS);
   config_->Reconnect((leader1 + 4) % NSERVERS);
+  Print("Disconnected and reconnect servers");
   // do a bunch of agreements among the new quorum
   Coroutine::Sleep(ELECTIONTIMEOUT);
   Log_debug("try to commit a lot of commands");
   for (int i = 1; i <= 50; i++) {
     DoAgreeAndAssertIndex(800 + i, NSERVERS - 2, index_++);
   }
+  Print("Do agree and assert index");
   // reconnect the old leader and its follower
-  Log_debug("reconnect the old leader and the follower");
+  Log_debug("Reconnect the old leader and the follower");
   config_->Reconnect((leader1 + 1) % NSERVERS);
   config_->Reconnect(leader1);
+  Print("Reconnect the leader and old person");
   Coroutine::Sleep(ELECTIONTIMEOUT);
   // do an agreement all together to check the old leader's incorrect
   // entries are replaced in a timely manner
   int leader2 = config_->OneLeader();
   AssertOneLeader(leader2);
+  Print("Asserted new leader");
   AssertStartOk(config_->Start(leader2, 851, &index, &term));
+  Print("Asseted ok");
   index_++;
   // 10 seconds should be enough to back up 50 incorrect logs
   Coroutine::Sleep(2*ELECTIONTIMEOUT);
   Log_debug("check if the old leader has enough committed");
   AssertNCommitted(index, NSERVERS);
+  Print("Check for all committed");
   Passed2();
 }
 

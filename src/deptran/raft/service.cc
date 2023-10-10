@@ -67,6 +67,7 @@ void RaftServiceImpl::HandleAppendEntriesCombined(
                         returnTerm,
                         followerAppendOK
                     );
+    Log_info("FollowerAppend ok %d and return term is %lu",followerAppendOK,returnTerm);
   //Log_info("Server %lu -> Handled append entry from %lu successfully",svr_->loc_id_,candidateId);
   defer->reply();
 }
