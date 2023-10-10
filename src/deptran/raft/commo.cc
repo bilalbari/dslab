@@ -47,7 +47,8 @@ RaftCommo::SendRequestVote(
         std::lock_guard<std::recursive_mutex> guard(mutex_);
         fu->get_reply() >> *return_term;
         fu->get_reply() >> *vote_granted;
-        ev->Set(1);
+        if(ev->status_ == Event::INIT || ev->status_ == Event::WAIT)
+          ev->Set(1);
       };
       Call_Async(
                 proxy, 
@@ -93,9 +94,7 @@ RaftCommo::SendAppendEntriesCombined(
         fu->get_reply() >> *followerLogSize;
         fu->get_reply() >> *returnTerm;
         fu->get_reply() >> *followerAppendOK;
-        std::recursive_mutex mutex_;
-        std::lock_guard<std::recursive_mutex> lock_guard(mutex_);
-        if(ev->status_ == Event::INIT)
+        if(ev->status_ != Event::TIMEOUT)
           ev->Set(1);
       };
       /* wrap Marshallable in a MarshallDeputy to send over RPC */
