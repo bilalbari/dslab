@@ -402,8 +402,6 @@ void RaftServer::becomeLeader()
               {
                 Log_info("Server %lu -> Append entry for %lu accepted",loc_id_,proxies[i].first);
                 matchIndex[i] = nextIndex[i];
-                //Log_info("Server %lu -> Able to increase match index value",loc_id_);
-                //currentNextIndex++;
                 nextIndex[i]++;
                 Log_info("Sever %lu -> Increased nextIndex value to %lu and match index to %lu",loc_id_,nextIndex[i],matchIndex[i]);
               }
