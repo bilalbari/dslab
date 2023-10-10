@@ -46,7 +46,7 @@ class RaftServer : public TxLogServer {
   uint64_t commitIndex;
   uint64_t lastApplied;
   vector<uint64_t> nextIndex;
-  vector<pair<uint64_t,uint64_t>> matchIndex;
+  vector<uint64_t> matchIndex;
 
   public:
     RaftServer(Frame *frame) ;
