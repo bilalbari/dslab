@@ -29,14 +29,12 @@ void RaftServiceImpl::HandleRequestVote(const uint64_t& term,
                                         uint64_t* returnTerm,
                                         bool_t* vote_granted,
                                         rrr::DeferredReply* defer) {
-    Log_info("Server %lu -> Service block - Received request vote for %lu",svr_->loc_id_,candidateId);
     svr_->HandleRequestVote( term,
                             candidateId,
                             lastLogIndex,
                             lastLogTerm,
                             returnTerm,
                             vote_granted);
-    Log_info("Server %lu -> Service block - Back to request vote call for %lu with vote as %d and returnTerm as %lli",svr_->loc_id_,candidateId,*vote_granted,*returnTerm);
     defer->reply();
 }
 
@@ -53,7 +51,6 @@ void RaftServiceImpl::HandleAppendEntriesCombined(
                                         uint64_t* returnTerm,
                                         bool_t* followerAppendOK,
                                         rrr::DeferredReply* defer) {
-  //Log_info("Server %lu -> Received Combined Append entries from %lu",svr_->loc_id_,candidateId);
   svr_->HandleAppendEntriesCombined(
                         candidateId,
                         prevLogIndex,
@@ -67,8 +64,6 @@ void RaftServiceImpl::HandleAppendEntriesCombined(
                         returnTerm,
                         followerAppendOK
                     );
-    Log_info("FollowerAppend ok %d and return term is %lu",followerAppendOK,returnTerm);
-  //Log_info("Server %lu -> Handled append entry from %lu successfully",svr_->loc_id_,candidateId);
   defer->reply();
 }
 

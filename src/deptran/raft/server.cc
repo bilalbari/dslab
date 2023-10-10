@@ -36,7 +36,7 @@ RaftServer::~RaftServer() {
 
 int RaftServer::generateElectionTimeout(){
     srand(loc_id_);
-    return 500+(rand()%300);
+    return 600+(rand()%400);
 }
 
 void RaftServer::convertToFollower(const uint64_t& term){
@@ -529,9 +529,9 @@ void RaftServer::becomeLeader()
     }
     mtx_.unlock();
     time_since_heartbeat = chrono::system_clock::now() - last_heartbeat_time;
-    uint64_t sleep_time = 150-time_since_heartbeat.count();
+    uint64_t sleep_time = 120-time_since_heartbeat.count();
     
-    if(sleep_time>0 && sleep_time<150)
+    if(sleep_time>0 && sleep_time<120)
     {
       Log_info("Server %lu -> Sleeping for %d",loc_id_,sleep_time);
       mtx_.unlock();
