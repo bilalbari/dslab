@@ -1,5 +1,3 @@
-
-
 #include <string>
 #include <vector>
 
@@ -12,7 +10,6 @@ namespace rrr {
 pthread_key_t RandomGenerator::seed_key_;
 pthread_once_t RandomGenerator::seed_key_once_ = PTHREAD_ONCE_INIT;
 pthread_once_t RandomGenerator::delete_key_once_ = PTHREAD_ONCE_INIT;
-
 
 void RandomGenerator::create_key() {
     pthread_key_create(&seed_key_, free);
@@ -28,13 +25,12 @@ unsigned int *RandomGenerator::get_seed() {
     if (seed == NULL) {
         seed = (unsigned int *)malloc(sizeof(unsigned int));
         pthread_setspecific(seed_key_, (void *)seed);
-        struct timespec new_val;
-	*seed = clock_gettime(CLOCK_REALTIME,&new_val);
+        *seed = rdtsc();
     }
     return seed;
 }
 #else // not __APPLE__
-thread_local unsigned int RandomGenerator::seed_ = clock_gettime(CLOCK_REALTIME,new timespec);
+thread_local unsigned int RandomGenerator::seed_ = rdtsc();
 #endif // __APPLE__
 
 int RandomGenerator::nu_constant = 0;
@@ -110,11 +106,11 @@ int RandomGenerator::nu_rand(int a, int x, int y) {
     return ((r1 | r2) + nu_constant) % (y - x + 1) + x;
 }
 
-//unsigned long long RandomGenerator::rdtsc() {
-  //  unsigned int lo, hi;
-    //__asm__ __volatile__("rdtsc" : "=a" (lo), "=d" (hi));
-    //return ((unsigned long long)hi << 32) | lo;
-//}
+unsigned long long RandomGenerator::rdtsc() {
+    unsigned int lo, hi;
+    __asm__ __volatile__("rdtsc" : "=a" (lo), "=d" (hi));
+    return ((unsigned long long)hi << 32) | lo;
+}
 
 unsigned int RandomGenerator::weighted_select(const std::vector<double> &weight_vector) {
     double sum = 0, stage_sum = 0;

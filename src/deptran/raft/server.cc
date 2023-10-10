@@ -128,6 +128,7 @@ void RaftServer::becomeCandidate()
     {
       uint64_t return_term = 0;
       bool_t vote_granted = 0;
+      Log_info("Server %lu -> Sending request vote to %lu",loc_id_,proxies[i].first);
       auto event = commo()->SendRequestVote(
                             0,
                             proxies[i].first,
@@ -170,6 +171,7 @@ void RaftServer::becomeCandidate()
       mtx_.unlock();
     }
   }
+  Log_info("Server %lu -> Outside for with total votes %lu and max_return_term %lu",loc_id_,total_votes_granted,max_return_term);
   mtx_.lock();
   if(state == "candidate")
   {
@@ -586,13 +588,13 @@ void RaftServer::Setup() {
   
   
   //Log_info("Server %lu -> Calling setup",loc_id_);
-  //Coroutine::CreateRun([this](){
+  //oroutine::CreateRun([this](){
     while(true)
     {
       //Log_info("Server %lu -> Inside setup starting",loc_id_);
       mtx_.lock();
       if(state == "follower")
-      {
+      { 
         uint64_t temp_term = currentTerm;
         mtx_.unlock();
         //Log_info("Server %lu ->Calling convert to follower",loc_id_);
@@ -619,7 +621,7 @@ void RaftServer::Setup() {
       //Log_info("Server %lu -> Inside setup after couroutine sleep",loc_id_);
     }
 
-  //});
+  });
 
 }
 
