@@ -47,7 +47,7 @@ RaftCommo::SendRequestVote(
         std::lock_guard<std::recursive_mutex> guard(mutex_);
         fu->get_reply() >> *return_term;
         fu->get_reply() >> *vote_granted;
-        if(ev->status_ == Event::INIT || ev->status_ == Event::WAIT)
+        if(ev->status_ != Event::TIMEOUT)
           ev->Set(1);
       };
       Call_Async(
