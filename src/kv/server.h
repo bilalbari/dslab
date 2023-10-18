@@ -48,8 +48,8 @@ class KvServer {
   int64_t op_id_cnt_ = 0;
   uint32_t cli_cnt_ = 0;
   Communicator* commo_{nullptr};
-
-  /* add your variables here */
+  unordered_map<string,string> my_key_value_map;
+  unordered_map<string,shared_ptr<IntEvent>> my_waiting_requests;
 
   RaftServer& GetRaftServer() {
     auto p = dynamic_pointer_cast<RaftServer>(sp_log_svr_);
