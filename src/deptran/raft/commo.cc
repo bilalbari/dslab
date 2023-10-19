@@ -8,6 +8,7 @@
 #include "raft_rpc.h"
 #include <mutex>
 #include "macros.h"
+#define Log_info Log_debug
 
 namespace janus {
 

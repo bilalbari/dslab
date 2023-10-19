@@ -1,4 +1,5 @@
 #include "server.h"
+#define Log_info Log_debug
 // #include "paxos_worker.h"
 #include "exec.h"
 #include "frame.h"
