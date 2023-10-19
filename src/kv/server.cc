@@ -180,9 +180,6 @@ void KvServer::OnNextCommand(Marshallable& m) {
     string key = v->data_[2];
     string value = v->data_[3];
     Log_info("KV Server %lu  -> OnNext, processing request %lu",raft_server.loc_id_,oid_int);
-    //if(raft_server.state!="leader" || my_waiting_requests.find(oid)!=my_waiting_requests.end())
-    //{
-    Log_info("KV Server %lu  -> OnNext, no timeout for %lu",raft_server.loc_id_,oid_int);
     if(command == "put")
     {
       my_key_value_map[key] = value;
@@ -205,11 +202,8 @@ void KvServer::OnNextCommand(Marshallable& m) {
       if(my_waiting_requests[oid]->status_ != Event::TIMEOUT)
         my_waiting_requests[oid]->Set(1);
       my_waiting_requests.erase(oid);
-      Log_info("KV Server %lu -> OnNext, Deleted pending request %lu",raft_server.loc_id_,oid_int);
+      Log_info("KV Server %lu -> OnNext, Processed and deleted pending request %lu",raft_server.loc_id_,oid_int);
     }
-    //}
-    //else
-    //Log_info("KV Server %lu-> OnNext, did not find request in pending requests %lu",raft_server.loc_id_,oid_int);
     my_mutex.unlock();
 }
 
