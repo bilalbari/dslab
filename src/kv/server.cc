@@ -25,7 +25,7 @@ int KvServer::Put(const uint64_t& oid,
     std::recursive_mutex my_mutex;
     my_mutex.lock();
     RaftServer& raft_server = GetRaftServer();
-    Log_info("KV Server %lu  -> Starting, put for %lu",raft_server.loc_id_,oid);
+    Log_info("KV Server %lu -> Starting, put for %lu",raft_server.loc_id_,oid);
     auto s = make_shared<MultiStringMarshallable>();
     s->data_.push_back(to_string(oid));
     s->data_.push_back("put");
