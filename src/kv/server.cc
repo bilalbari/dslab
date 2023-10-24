@@ -172,7 +172,7 @@ void KvServer::OnNextCommand(Marshallable& m) {
     std::recursive_mutex my_mutex;
     my_mutex.lock();
     RaftServer& raft_server = GetRaftServer();
-    Log_info("KV Server %lu  -> Inside OnNextCommand",raft_server.loc_id_,raft_server.state);
+    Log_info("KV Server %lu  -> Inside OnNextCommand",raft_server.loc_id_);
     auto v = (MultiStringMarshallable*)(&m);
     string oid = v->data_[0];
     uint64_t oid_int = stoull(oid);
