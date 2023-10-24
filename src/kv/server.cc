@@ -55,7 +55,7 @@ int KvServer::Put(const uint64_t& oid,
       }
       else
       {
-        Log_info("KV Server %lu  -> Sending success put for %lu",raft_server.loc_id_,oid);
+        Log_info("KV Server %lu -> Sending success put for %lu",raft_server.loc_id_,oid);
         my_mutex.unlock();
         return KV_SUCCESS;
       }
@@ -63,7 +63,7 @@ int KvServer::Put(const uint64_t& oid,
     else
     {
       my_mutex.lock();
-      Log_info("KV Server %lu  -> Sending back no leader, put for %lu",raft_server.loc_id_,oid);
+      Log_info("KV Server %lu -> Sending back no leader, put for %lu",raft_server.loc_id_,oid);
       my_mutex.unlock();
       return KV_NOTLEADER;
     }
