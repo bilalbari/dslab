@@ -5,6 +5,7 @@
 #include "../scheduler.h"
 #include "../classic/tpc_command.h"
 #include "commo.h"
+#include "persister.h"
 #include <chrono>
 #include <ctime>
 #include <thread>
@@ -36,6 +37,7 @@ struct LogEntry{
 
 class RaftServer : public TxLogServer {
  public:
+   shared_ptr<Persister> persister;
   
 
   uint64_t currentTerm;
@@ -49,15 +51,18 @@ class RaftServer : public TxLogServer {
   vector<uint64_t> matchIndex;
 
   public:
-    RaftServer(Frame *frame) ;
+    RaftServer(Frame *frame, shared_ptr<Persister> persister) ;
     ~RaftServer() ;
 
     bool Start(shared_ptr<Marshallable> &cmd, uint64_t *index, uint64_t *term);
     void GetState(bool *is_leader, uint64_t *term);
+  void Persist();
+  void ReadPersist();
 
   private:
     bool disconnected_ = false;
-  	void Setup();
+    void Setup();
+  void Shutdown();
 
   public:
     void SyncRpcExample();

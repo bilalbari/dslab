@@ -9,8 +9,9 @@
 
 namespace janus {
 
-RaftServer::RaftServer(Frame * frame) {
+RaftServer::RaftServer(Frame * frame, shared_ptr<Persister> persister_) {
   frame_ = frame ;
+  persister = persister_;
   mtx_.lock();
 
   currentTerm = 1;
@@ -570,6 +571,20 @@ void RaftServer::Setup() {
     }
   });
 
+}
+
+
+
+void RaftServer::Shutdown() {
+  /* Your code here for server shutdown */
+}
+
+void RaftServer::Persist() {
+  /* Your code here for persisting raft state */
+}
+
+void RaftServer::ReadPersist() {
+  /* Your code here for reading persisted raft state */
 }
 
 bool RaftServer::Start(shared_ptr<Marshallable> &cmd,

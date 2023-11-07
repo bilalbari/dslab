@@ -7,6 +7,7 @@
 #include "../deptran/raft/server.h"
 
 namespace janus {
+ 
 class RaftServer;
 
 const int KV_SUCCESS = 0;
@@ -47,9 +48,13 @@ class KvServer {
   shared_ptr<TxLogServer> sp_log_svr_; 
   int64_t op_id_cnt_ = 0;
   uint32_t cli_cnt_ = 0;
-  Communicator* commo_{nullptr};
+  uint64_t maxraftstate_ = 0;
+  KvServer(uint64_t maxraftstate) ;
+  ~KvServer() ;
   unordered_map<string,string> my_key_value_map;
   unordered_map<string,shared_ptr<IntEvent>> my_waiting_requests;
+
+  /* add your variables here */
 
   RaftServer& GetRaftServer() {
     auto p = dynamic_pointer_cast<RaftServer>(sp_log_svr_);
