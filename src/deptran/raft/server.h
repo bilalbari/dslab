@@ -35,11 +35,55 @@ struct LogEntry{
   }
 };
 
+class StateMarshallable : public Marshallable {
+ public:
+  StateMarshallable() : Marshallable(MarshallDeputy::CMD_STATE) {} 
+  uint64_t persistedTerm;
+  uint64_t persistedVotedFor;
+  uint64_t persistedCommitIndex;
+  uint64_t persistedLastApplied;
+  vector<uint64_t> persistedTerms{};
+  vector<MarshallDeputy> persistedCommands{};
+  Marshal& ToMarshal(Marshal& m) const override {
+    Log_info("Inside ToMarshall");
+    m << persistedTerm;
+    Log_info("Term persisted");
+    m << persistedVotedFor;
+    Log_info("VotedFor persisted");
+    m << persistedCommitIndex;
+    Log_info("Commit Index persisted");
+    m << persistedLastApplied;
+    Log_info("Last Applied persisted");
+    m << persistedTerms;
+    Log_info("term array persisted");
+    m << persistedCommands;
+    Log_info("commands persisted");
+    return m;
+  }
+
+  Marshal& FromMarshal(Marshal& m) override {
+    Log_info("Inside from marshal");
+    m >> persistedTerm;
+    Log_info("got term");
+    m >> persistedVotedFor;
+    Log_info("got voted for");
+    m << persistedCommitIndex;
+    Log_info("Commit Index persisted");
+    m << persistedLastApplied;
+    Log_info("Last Applied persisted");
+    m >> persistedTerms;
+    Log_info("got term vector");
+    m >> persistedCommands;
+    Log_info("got commands vector");
+    return m;
+  }
+};
+
 class RaftServer : public TxLogServer {
  public:
    shared_ptr<Persister> persister;
   
-
+  uint64_t aboutToDie;
   uint64_t currentTerm;
   uint64_t votedFor;
   vector<LogEntry> stateLog;
