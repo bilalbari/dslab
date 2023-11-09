@@ -19,14 +19,7 @@ RaftServer::RaftServer(Frame * frame, shared_ptr<Persister> persister_) {
   frame_ = frame ;
   persister = persister_;
   mtx_.lock();
-  auto cmdptr = std::make_shared<TpcCommitCommand>();
-  auto vpd_p = std::make_shared<VecPieceData>();
-  vpd_p->sp_vec_piece_data_ = std::make_shared<vector<shared_ptr<SimpleCommand>>>();
-  cmdptr->tx_id_ = 0;
-  cmdptr->cmd_ = vpd_p;
-  auto cmdptr_m = dynamic_pointer_cast<Marshallable>(cmdptr);
   stateLog = vector<LogEntry>();
-  stateLog.push_back(LogEntry(cmdptr_m,0));  
   if(persister->RaftStateSize() != -1)
   {
     // stateLog = vector<LogEntry>();
@@ -40,6 +33,13 @@ RaftServer::RaftServer(Frame * frame, shared_ptr<Persister> persister_) {
     Log_info("Server %lu -> Initialising for the first time",loc_id_);
     currentTerm = 1;
     votedFor = 6;
+    auto cmdptr = std::make_shared<TpcCommitCommand>();
+    auto vpd_p = std::make_shared<VecPieceData>();
+    vpd_p->sp_vec_piece_data_ = std::make_shared<vector<shared_ptr<SimpleCommand>>>();
+    cmdptr->tx_id_ = 0;
+    cmdptr->cmd_ = vpd_p;
+    auto cmdptr_m = dynamic_pointer_cast<Marshallable>(cmdptr);
+    stateLog.push_back(LogEntry(cmdptr_m,0));  
     //MarshallDeputy md(cmdptr_m);
     // Marshallable* m = new CmdData();
     // std::shared_ptr<Marshallable> my_shared(m);
@@ -91,7 +91,7 @@ void RaftServer::runFollowerTimeout(){
   chrono::duration<double,milli> time_spent = chrono::system_clock::now() - lastStartTime;
   mtx_.unlock();
   
-  while(time_spent < endTimeout)
+  while(time_spent < endTimeout && aboutToDie==0)
   {
     Coroutine::Sleep(electionTimeout*1000);
     mtx_.lock();
@@ -591,6 +591,7 @@ void RaftServer::becomeLeader()
       break;
     }
     mtx_.unlock();
+    Log_info("Server %lu -> Got about to die as %d inside leader",loc_id_,aboutToDie);
   }
 }
 
@@ -601,23 +602,24 @@ void RaftServer::Setup() {
     while(true && aboutToDie == 0)
     {
       mtx_.lock();
-      if(state == "follower")
+      if(state == "follower" && aboutToDie == 0)
       {
         uint64_t temp_term = currentTerm;
         mtx_.unlock();
         convertToFollower(temp_term);
       }
-      if(state == "candidate")
+      if(state == "candidate" && aboutToDie == 0)
       {
         mtx_.unlock();
         becomeCandidate();
       }
-      if(state == "leader")
+      if(state == "leader" && aboutToDie == 0)
       {
         mtx_.unlock();
         becomeLeader();
       }
       mtx_.unlock();
+      Log_info("Server %lu -> Got about to die inside setup as %lu",loc_id_,aboutToDie);
     }
   });
 
@@ -628,9 +630,11 @@ void RaftServer::Setup() {
 void RaftServer::Shutdown() {
   Log_info("Server %lu -> Received shutdown call",loc_id_);
   mtx_.lock();
-  Persist();
   aboutToDie = 1;
+  mtx_.unlock();
   Coroutine::Sleep(1000000);
+  mtx_.lock();
+  Persist();
   mtx_.unlock();
 }
 
@@ -678,7 +682,7 @@ void RaftServer::convertBackFromPersisted(vector<uint64_t> termVector,vector<Mar
   // Marshallable* m = new CmdData();
   // std::shared_ptr<Marshallable> my_shared(m);
   // myEntries.push_back(LogEntry(my_shared,0));
-  for(int i=1;i<termVector.size();i++)
+  for(int i=0;i<termVector.size();i++)
   {
     //std::shared_ptr<Marshallable> cmd = const_cast<MarshallDeputy&>(commandVector[i]).sp_data_;
     stateLog.push_back(LogEntry(commandVector[i].sp_data_,termVector[i]));
@@ -702,9 +706,10 @@ void RaftServer::Persist() {
   Log_info("Server %lu -> Stored commit index",loc_id_);
   myCurrentState->persistedLastApplied = lastApplied;
   Log_info("Server %lu -> Stored last applied",loc_id_);
-  myCurrentState->persistedLogTerms = getAllLogTerms(stateLog);
-  Log_info("Server %lu -> Stored log terms",loc_id_);
-  myCurrentState->persistedLogs = convertToDeputy(stateLog);
+  // myCurrentState->persistedLogTerms = getAllLogTerms(stateLog);
+  myCurrentState->persistedLogs = stateLog;
+  // Log_info("Server %lu -> Stored log terms",loc_id_);
+  // myCurrentState->persistedLogs = convertToDeputy(stateLog);
   // Log_info("Server %lu -> Stored Logs",loc_id_);
   // MarshallDeputy md;
   // vector<MarshallDeputy> myDeputyVector(stateLog.size()-1,md);
@@ -728,7 +733,8 @@ void RaftServer::Persist() {
 void RaftServer::ReadPersist() {
   mtx_.lock();
   Log_info("Server %lu -> Found existing persisted state",loc_id_);
-  auto myStoredState =  (StateMarshallable*)(&(*persister->ReadRaftState()));
+  auto tempState = persister->ReadRaftState();
+  auto myStoredState =  (StateMarshallable*)(&(*tempState));
   Log_info("Server %lu -> State retrieved",loc_id_);
   currentTerm = myStoredState -> persistedTerm;
   Log_info("Server %lu -> Got old term as %lu",loc_id_,currentTerm);
@@ -738,9 +744,10 @@ void RaftServer::ReadPersist() {
   Log_info("Server %lu -> Got commit index as %lu",loc_id_,commitIndex);
   lastApplied = myStoredState -> persistedLastApplied;
   Log_info("Server %lu -> Got last applied as %lu",loc_id_,lastApplied);
+  stateLog = myStoredState -> persistedLogs;
   // for(int i=0;i<myStoredState->persistedTerms.size();i++)
   //   Log_info("Server %lu -> Found term %lu",loc_id_, myStoredState->persistedTerms[i]);
-  convertBackFromPersisted(myStoredState->persistedLogTerms,myStoredState->persistedLogs);
+  // convertBackFromPersisted(myStoredState->persistedLogTerms,myStoredState->persistedLogs);
   Log_info("Server %lu -> Got back state logs",loc_id_);
   // for(int i=0;i<myVector.size();i++)
   // {
