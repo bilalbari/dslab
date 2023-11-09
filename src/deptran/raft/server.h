@@ -35,6 +35,17 @@ struct LogEntry{
   }
 };
 
+struct StoringLogEntry{
+  MarshallDeputy cmd;
+  uint64_t term;
+  StoringLogEntry();
+  StoringLogEntry(MarshallDeputy getCmd,uint64_t getTerm)
+  {
+    cmd = getCmd;
+    term = getTerm;
+  }
+};
+
 class StateMarshallable : public Marshallable {
  public:
   StateMarshallable() : Marshallable(MarshallDeputy::CMD_STATE) {} 
@@ -42,8 +53,9 @@ class StateMarshallable : public Marshallable {
   uint64_t persistedVotedFor;
   uint64_t persistedCommitIndex;
   uint64_t persistedLastApplied;
-  vector<uint64_t> persistedTerms{};
-  vector<MarshallDeputy> persistedCommands{};
+  // vector<StoringLogEntry> persistedLogs;
+  vector<uint64_t> persistedLogTerms{};
+  vector<MarshallDeputy> persistedLogs{};
   Marshal& ToMarshal(Marshal& m) const override {
     Log_info("Inside ToMarshall");
     m << persistedTerm;
@@ -54,10 +66,15 @@ class StateMarshallable : public Marshallable {
     Log_info("Commit Index persisted");
     m << persistedLastApplied;
     Log_info("Last Applied persisted");
-    m << persistedTerms;
-    Log_info("term array persisted");
-    m << persistedCommands;
-    Log_info("commands persisted");
+    int32_t sz = persistedLogs.size();
+    m << sz;
+    for(int i=0;i<sz;i++)
+    {
+      m << persistedLogs[i];
+      Log_info("%d commands persisted",i);
+      m << persistedLogTerms[i];
+      Log_info("%d log term persisted",i);
+    }
     return m;
   }
 
@@ -67,14 +84,25 @@ class StateMarshallable : public Marshallable {
     Log_info("got term");
     m >> persistedVotedFor;
     Log_info("got voted for");
-    m << persistedCommitIndex;
-    Log_info("Commit Index persisted");
-    m << persistedLastApplied;
-    Log_info("Last Applied persisted");
-    m >> persistedTerms;
-    Log_info("got term vector");
-    m >> persistedCommands;
-    Log_info("got commands vector");
+    m >> persistedCommitIndex;
+    Log_info("got persisted");
+    m >> persistedLastApplied;
+    Log_info("got last applied");
+    int32_t sz;
+    m >> sz;
+    persistedLogs.clear();
+    persistedLogTerms.clear();
+    for(int i=0;i<sz;i++)
+    {
+      uint64_t term;
+      MarshallDeputy marshallD;
+      m >> marshallD;
+      m >> term;
+      persistedLogs.push_back(marshallD);
+      Log_info("got %d command",i);
+      persistedLogTerms.push_back(term);
+      Log_info("got %d term",i);
+    }
     return m;
   }
 };
@@ -114,6 +142,9 @@ class RaftServer : public TxLogServer {
     void Reconnect() {
       Disconnect(false);
     }
+    vector<MarshallDeputy> convertToDeputy(vector<LogEntry> a);
+    vector<uint64_t> getAllLogTerms(vector<LogEntry> a);
+    void convertBackFromPersisted(vector<uint64_t> termVector,vector<MarshallDeputy> commandVector);
     int generateElectionTimeout();
     void HandleAppendEntriesCombined(
                               const siteid_t& candidateId,
@@ -128,11 +159,6 @@ class RaftServer : public TxLogServer {
                               uint64_t* returnTerm,
                               bool_t* followerAppendOK);
                               
-    void HandleEmptyAppendEntries(
-                              const uint64_t& term,
-                              const siteid_t& candidateId,
-                              const uint64_t& leaderCommitIndex,
-                              uint64_t* returnTerm);
     void convertToFollower(const uint64_t& term);
     void runFollowerTimeout();
     void becomeLeader();
@@ -143,19 +169,8 @@ class RaftServer : public TxLogServer {
                         const uint64_t& lastLogTerm,
                         uint64_t* returnTerm,
                         bool_t* vote_granted);
-    void HandleAppendEntries(
-                      const siteid_t& candidateId,
-                      const uint64_t& prevLogIndex,
-                      const uint64_t& prevLogTerm,
-                      const uint64_t& term,
-                      const uint64_t& leaderCommitIndex,
-                      const MarshallDeputy& md_cmd,
-                      uint64_t* returnTerm,
-                      bool_t* followerAppendOK
-                      );
     void becomeCandidate();
     bool IsDisconnected();
-    void startConsensus();
     bool checkMoreUpdated(uint64_t lastLogIndex,
                           uint64_t lastLogTerm);
 
