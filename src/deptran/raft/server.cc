@@ -545,6 +545,7 @@ void RaftServer::becomeLeader()
         {
           if(j <= matchIndex[i])
           {
+            Log_info("Server %lu -> Found matchIndex %lu for server %d",loc_id_, matchIndex[i],i);
             total_agreement++;
           }
         }

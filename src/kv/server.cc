@@ -53,7 +53,7 @@ int KvServer::Put(const uint64_t& oid,
       my_waiting_requests[to_string(oid)] = ev;
       Log_info("KV Server %lu  -> Before wait, put for %lu",raft_server.loc_id_,oid);
       my_mutex.unlock();
-      ev->Wait(1000000);
+      ev->Wait(25000000);
       my_mutex.lock();
       Log_info("KV Server %lu -> After wait, put for %lu",raft_server.loc_id_,oid);
       if(ev->status_ == Event::TIMEOUT)
@@ -102,7 +102,7 @@ int KvServer::Append(const uint64_t& oid,
       my_waiting_requests[to_string(oid)] = ev;
       my_mutex.unlock();
       Log_info("KV Server %lu  -> Before wait, append for %lu",raft_server.loc_id_,oid);
-      ev->Wait(1000000);
+      ev->Wait(25000000);
       my_mutex.lock();
       Log_info("KV Server %lu  -> After wait, append for %lu",raft_server.loc_id_,oid);
       if(ev->status_ == Event::TIMEOUT)
@@ -152,7 +152,7 @@ int KvServer::Get(const uint64_t& oid,
       my_waiting_requests[to_string(oid)] = ev;
       my_mutex.unlock();
       Log_info("KV Server %lu  -> Before wait, get for %lu",raft_server.loc_id_,oid);
-      ev->Wait(1000000);
+      ev->Wait(25000000);
       my_mutex.lock();
       Log_info("KV Server %lu  -> After wait, get for %lu",raft_server.loc_id_,oid);
       if(ev->status_ == Event::TIMEOUT)
