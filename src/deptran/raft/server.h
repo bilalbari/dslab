@@ -35,17 +35,6 @@ struct LogEntry{
   }
 };
 
-struct StoringLogEntry{
-  MarshallDeputy cmd;
-  uint64_t term;
-  StoringLogEntry();
-  StoringLogEntry(MarshallDeputy getCmd,uint64_t getTerm)
-  {
-    cmd = getCmd;
-    term = getTerm;
-  }
-};
-
 class StateMarshallable : public Marshallable {
  public:
   StateMarshallable() : Marshallable(MarshallDeputy::CMD_STATE) {} 
@@ -53,9 +42,6 @@ class StateMarshallable : public Marshallable {
   uint64_t persistedVotedFor;
   uint64_t persistedCommitIndex;
   uint64_t persistedLastApplied;
-  // vector<StoringLogEntry> persistedLogs;
-  //vector<uint64_t> persistedLogTerms{};
-  //vector<MarshallDeputy> persistedLogs{};
   vector<LogEntry> persistedLogs;
   Marshal& ToMarshal(Marshal& m) const override {
     Log_info("Inside ToMarshall");
@@ -69,33 +55,13 @@ class StateMarshallable : public Marshallable {
     Log_info("Last Applied persisted");
     int32_t sz = persistedLogs.size();
     m << sz;
-    int c = 0;
     for(auto& x: persistedLogs)
     {
-      Log_info("Found term as %lu",x.term);
-      if(c==0)
-      {
-        auto cmdptr = std::make_shared<TpcCommitCommand>();
-        auto vpd_p = std::make_shared<VecPieceData>();
-        vpd_p->sp_vec_piece_data_ = std::make_shared<vector<shared_ptr<SimpleCommand>>>();
-        cmdptr->tx_id_ = 100;
-        cmdptr->cmd_ = vpd_p;
-        auto cmdptr_m = dynamic_pointer_cast<Marshallable>(cmdptr);
-        MarshallDeputy marshallD(cmdptr_m);
-        m << marshallD;
-        Log_info("command persisted");
-        m << x.term;
-        Log_info("Term persisted");
-        c++;
-      }
-      else
-      {
-        MarshallDeputy marshallD(x.cmd);
-        m << marshallD;
-        Log_info("command persisted");
-        m << x.term;
-        Log_info("Term persisted");
-      }
+      MarshallDeputy marshallD(x.cmd);
+      m << marshallD;
+      Log_info("command persisted");
+      m << x.term;
+      Log_info("Term persisted");
     }
     return m;
   }
@@ -118,12 +84,10 @@ class StateMarshallable : public Marshallable {
       MarshallDeputy marshallD;
       m >> marshallD;
       m >> term;
-      //persistedLogs.push_back(marshallD);
       std::shared_ptr<Marshallable> cmd = const_cast<MarshallDeputy&>(marshallD).sp_data_;
       LogEntry newEntry(cmd,term);
       Log_info("Created entry");
       persistedLogs.push_back(newEntry);
-      //persistedLogTerms.push_back(term);
       Log_info("Entry pushed");
     }
     return m;
