@@ -1,5 +1,6 @@
 #include "server.h"
 // #include "paxos_worker.h"
+#define Log_info Log_debug
 #include "exec.h"
 #include "frame.h"
 #include "coordinator.h"
@@ -119,7 +120,7 @@ void RaftServer::becomeCandidate()
   votedFor = loc_id_;
   chrono::duration<double,milli> time_spent = 
                   chrono::system_clock::now() - lastStartTime;
-  auto proxies = commo()->rpc_par_proxies_[0];
+  auto proxies = commo()->rpc_par_proxies_[partition_id_];
   mtx_.unlock();
 
   mtx_.lock();
@@ -139,7 +140,7 @@ void RaftServer::becomeCandidate()
       bool_t vote_granted = 0;
       Log_info("Server %lu -> Sending request vote to %lu with lastLogIndex as %lu and lastLogTerm as %lu",loc_id_,proxies[i].first, tempLastLogIndex, tempLastLogTerm);
       auto event = commo()->SendRequestVote(
-                            0,
+                            partition_id_,
                             proxies[i].first,
                             tempCurrentTerm, // sending my term
                             loc_id_,  //sending my id
@@ -372,7 +373,7 @@ void RaftServer::becomeLeader()
   nextIndex = vector<uint64_t>(5,tempLogIndex);
   matchIndex = vector<uint64_t>(5,0);
   matchIndex[loc_id_] = stateLog.size()-1;
-  auto proxies = commo()->rpc_par_proxies_[0];
+  auto proxies = commo()->rpc_par_proxies_[partition_id_];
   mtx_.unlock();
   
   while(true && aboutToDie == 0)
@@ -408,7 +409,7 @@ void RaftServer::becomeLeader()
           Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry for %lu",loc_id_,proxies[i].first);
           mtx_.unlock();
           auto event = commo()->SendAppendEntriesCombined(
-                                      0,
+                                      partition_id_,
                                       proxies[i].first,
                                       loc_id_,
                                       prevLogIndex,
@@ -482,7 +483,7 @@ void RaftServer::becomeLeader()
           Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry as heartbeat",loc_id_);
           mtx_.unlock();
           auto event = commo()->SendAppendEntriesCombined(
-                                      0,
+                                      partition_id_,
                                       proxies[i].first,
                                       loc_id_,
                                       prevLogIndex,

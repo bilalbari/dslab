@@ -35,24 +35,34 @@ class ShardMasterServiceImpl : public ShardMasterService {
  public:
   shared_ptr<TxLogServer> sp_log_svr_{}; 
   const uint64_t SM_TIMEOUT = 10000000; // 10s
-  map<uint32_t, ShardConfig> configs_{};   
-  // add your own variables here if needed 
-
-  // add your own functions here if needed  
-
-  // do not change anything below
+  map<uint32_t, ShardConfig> configs_{}; 
+  ShardConfig currentConfig;
+  uint64_t currentConfiguration;
+  unordered_map<uint64_t, shared_ptr<IntEvent>> my_waiting_requests;
+  uint64_t currentRequestNumber;
+  
   RaftServer& GetRaftServer() {
     auto p = dynamic_pointer_cast<RaftServer>(sp_log_svr_);
     verify(p != nullptr);
     return *p;
   }
-  ShardMasterServiceImpl() {}
+  ShardMasterServiceImpl() {
+    currentConfiguration = 0;
+    configs_[currentConfiguration] = currentConfig;
+    currentRequestNumber = 0;
+  }
   virtual void Join(const std::map<uint32_t, std::vector<uint32_t>>& gid_server_map, uint32_t* ret, rrr::DeferredReply* defer) override;
   virtual void Leave(const std::vector<uint32_t>& gids, uint32_t* ret, rrr::DeferredReply* defer) override;
   virtual void Move(const int32_t& shard, const uint32_t& gid, uint32_t* ret, rrr::DeferredReply* defer) override;
   virtual void Query(const int32_t& config_no, uint32_t* ret, ShardConfig* config, rrr::DeferredReply* defer) override;
   void OnNextCommand(Marshallable& m);
   shared_ptr<ShardMasterClient> CreateClient();
+  void HandleJoin(map<uint32_t, vector<uint32_t>> gid_server_map);
+  void HandleLeave(vector<uint32_t> gids);
+  void HandleQuery(uint32_t config_no);
+  void HandleMove(int32_t shard, uint32_t gid);
+  map<uint32_t,vector<uint32_t>> GetServerToShardMapping();
+  vector<uint32_t> GetAllGroups();
 };
 
 } // namespace janus
