@@ -131,7 +131,7 @@ void ShardMasterServiceImpl::Move(const int32_t& shard, const uint32_t& gid, uin
   uint64_t index =0 ,term = 0;
   uint64_t *pointerToIndex = &index, *pointerToTerm = &term;
   my_mutex.unlock();
-  Log_info("Shard Master %lu -> Calling start for request %lu",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> calling start for request %lu",raft_server.loc_id_,tempRequestNumber);
   if(raft_server.Start(my_command, pointerToIndex, pointerToTerm))
   {
     my_mutex.lock();
