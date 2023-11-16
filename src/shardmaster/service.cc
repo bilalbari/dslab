@@ -13,16 +13,16 @@ void ShardMasterServiceImpl::Join(const map<uint32_t, std::vector<uint32_t>>& gi
   std::recursive_mutex my_mutex;
   my_mutex.lock();
   RaftServer& raft_server = GetRaftServer();
-  Log_info("Shard Master %lu -> Got join request",raft_server.loc_id_);
+  Log_info("Shard Master %lu -> Got join request",raft_server.site_id_);
   stringstream ss;
   boost::archive::text_oarchive oarch(ss);
   oarch << gid_server_map;
   MultiStringMarshallable m;
   auto s = make_shared<MultiStringMarshallable>();
   uint64_t tempRequestNumber = currentRequestNumber;
-  Log_info("Shard Master %lu -> Assigned request %lu, join",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> Assigned request %lu, join",raft_server.site_id_,tempRequestNumber);
   currentRequestNumber++;
-  Log_info("Shard Master %lu -> Updated currentRequestNumber to %lu",raft_server.loc_id_,currentRequestNumber);
+  Log_info("Shard Master %lu -> Updated currentRequestNumber to %lu",raft_server.site_id_,currentRequestNumber);
   s->data_.push_back(to_string(tempRequestNumber));
   s->data_.push_back("join");
   s->data_.push_back(ss.str());
@@ -30,25 +30,25 @@ void ShardMasterServiceImpl::Join(const map<uint32_t, std::vector<uint32_t>>& gi
   uint64_t index =0 ,term = 0;
   uint64_t *pointerToIndex = &index, *pointerToTerm = &term;
   my_mutex.unlock();
-  Log_info("Shard Master %lu -> Calling start for request %lu",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> Calling start for request %lu",raft_server.site_id_,tempRequestNumber);
   if(raft_server.Start(my_command, pointerToIndex, pointerToTerm))
   {
     my_mutex.lock();
     auto ev = Reactor::CreateSpEvent<IntEvent>();
     my_waiting_requests[tempRequestNumber] = ev;
     my_mutex.unlock();
-    Log_info("Shard Master %lu -> Before waiting for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> Before waiting for request %lu",raft_server.site_id_,tempRequestNumber);
     ev->Wait(1000000);
-    Log_info("Shard Master %lu -> After waiting for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> After waiting for request %lu",raft_server.site_id_,tempRequestNumber);
     my_mutex.lock();
     if(ev->status_ == Event::TIMEOUT)
     {
-      Log_info("Shard Master %lu -> request %lu timed out",raft_server.loc_id_,tempRequestNumber);
+      Log_info("Shard Master %lu -> request %lu timed out",raft_server.site_id_,tempRequestNumber);
       *ret = KV_TIMEOUT;
     }
     else
     {
-      Log_info("Shard Master %lu -> request %lu successfully handled",raft_server.loc_id_, tempRequestNumber);
+      Log_info("Shard Master %lu -> request %lu successfully handled",raft_server.site_id_, tempRequestNumber);
       *ret = KV_SUCCESS;
     }
     my_mutex.unlock();
@@ -56,7 +56,7 @@ void ShardMasterServiceImpl::Join(const map<uint32_t, std::vector<uint32_t>>& gi
   else
   {
     *ret = KV_NOTLEADER;
-    Log_info("Shard Master %lu -> Returning not leader for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> Returning not leader for request %lu",raft_server.site_id_,tempRequestNumber);
   }
   defer->reply();
 }
@@ -65,16 +65,16 @@ void ShardMasterServiceImpl::Leave(const std::vector<uint32_t>& gids, uint32_t* 
   std::recursive_mutex my_mutex;
   my_mutex.lock();
   RaftServer& raft_server = GetRaftServer();
-  Log_info("Shard Master %lu -> Got Leave request",raft_server.loc_id_);
+  Log_info("Shard Master %lu -> Got Leave request",raft_server.site_id_);
   stringstream ss;
   boost::archive::text_oarchive oarch(ss);
   oarch << gids;
   MultiStringMarshallable m;
   auto s = make_shared<MultiStringMarshallable>();
   uint64_t tempRequestNumber = currentRequestNumber;
-  Log_info("Shard Master %lu -> Assigned request %lu, Leave",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> Assigned request %lu, Leave",raft_server.site_id_,tempRequestNumber);
   currentRequestNumber++;
-  Log_info("Shard Master %lu -> Updated currentRequestNumber to %lu",raft_server.loc_id_,currentRequestNumber);
+  Log_info("Shard Master %lu -> Updated currentRequestNumber to %lu",raft_server.site_id_,currentRequestNumber);
   s->data_.push_back(to_string(tempRequestNumber));
   s->data_.push_back("leave");
   s->data_.push_back(ss.str());
@@ -82,25 +82,25 @@ void ShardMasterServiceImpl::Leave(const std::vector<uint32_t>& gids, uint32_t* 
   uint64_t index =0 ,term = 0;
   uint64_t *pointerToIndex = &index, *pointerToTerm = &term;
   my_mutex.unlock();
-  Log_info("Shard Master %lu -> Calling start for request %lu",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> Calling start for request %lu",raft_server.site_id_,tempRequestNumber);
   if(raft_server.Start(my_command, pointerToIndex, pointerToTerm))
   {
     my_mutex.lock();
     auto ev = Reactor::CreateSpEvent<IntEvent>();
     my_waiting_requests[tempRequestNumber] = ev;
     my_mutex.unlock();
-    Log_info("Shard Master %lu -> Before waiting for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> Before waiting for request %lu",raft_server.site_id_,tempRequestNumber);
     ev->Wait(1000000);
-    Log_info("Shard Master %lu -> After waiting for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> After waiting for request %lu",raft_server.site_id_,tempRequestNumber);
     my_mutex.lock();
     if(ev->status_ == Event::TIMEOUT)
     {
-      Log_info("Shard Master %lu -> request %lu timed out",raft_server.loc_id_,tempRequestNumber);
+      Log_info("Shard Master %lu -> request %lu timed out",raft_server.site_id_,tempRequestNumber);
       *ret = KV_TIMEOUT;
     }
     else
     {
-      Log_info("Shard Master %lu -> request %lu successfully handled",raft_server.loc_id_);
+      Log_info("Shard Master %lu -> request %lu successfully handled",raft_server.site_id_);
       *ret = KV_SUCCESS;
     }
     my_mutex.unlock();
@@ -108,7 +108,7 @@ void ShardMasterServiceImpl::Leave(const std::vector<uint32_t>& gids, uint32_t* 
   else
   {
     *ret = KV_NOTLEADER;
-    Log_info("Shard Master %lu -> Returning not leader for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> Returning not leader for request %lu",raft_server.site_id_,tempRequestNumber);
   }
   defer->reply();
 }
@@ -116,13 +116,13 @@ void ShardMasterServiceImpl::Move(const int32_t& shard, const uint32_t& gid, uin
   std::recursive_mutex my_mutex;
   my_mutex.lock();
   RaftServer& raft_server = GetRaftServer();
-  Log_info("Shard Master %lu -> Got move request",raft_server.loc_id_);
+  Log_info("Shard Master %lu -> Got move request",raft_server.site_id_);
   MultiStringMarshallable m;
   auto s = make_shared<MultiStringMarshallable>();
   uint64_t tempRequestNumber = currentRequestNumber;
-  Log_info("Shard Master %lu -> Assigned request number %lu, move",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> Assigned request number %lu, move",raft_server.site_id_,tempRequestNumber);
   currentRequestNumber++;
-  Log_info("Shard Master %lu -> Updated currentRequestNumber to %lu",raft_server.loc_id_,currentRequestNumber);
+  Log_info("Shard Master %lu -> Updated currentRequestNumber to %lu",raft_server.site_id_,currentRequestNumber);
   s->data_.push_back(to_string(tempRequestNumber));
   s->data_.push_back("move");
   s->data_.push_back(to_string(shard));
@@ -131,25 +131,25 @@ void ShardMasterServiceImpl::Move(const int32_t& shard, const uint32_t& gid, uin
   uint64_t index =0 ,term = 0;
   uint64_t *pointerToIndex = &index, *pointerToTerm = &term;
   my_mutex.unlock();
-  Log_info("Shard Master %lu -> calling start for request %lu",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> calling start for request %lu",raft_server.site_id_,tempRequestNumber);
   if(raft_server.Start(my_command, pointerToIndex, pointerToTerm))
   {
     my_mutex.lock();
     auto ev = Reactor::CreateSpEvent<IntEvent>();
     my_waiting_requests[tempRequestNumber] = ev;
     my_mutex.unlock();
-    Log_info("Shard Master %lu -> Before waiting for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> Before waiting for request %lu",raft_server.site_id_,tempRequestNumber);
     ev->Wait(1000000);
-    Log_info("Shard Master %lu -> After waiting for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> After waiting for request %lu",raft_server.site_id_,tempRequestNumber);
     my_mutex.lock();
     if(ev->status_ == Event::TIMEOUT)
     {
-      Log_info("Shard Master %lu -> Request %lu timed out",raft_server.loc_id_,tempRequestNumber);
+      Log_info("Shard Master %lu -> Request %lu timed out",raft_server.site_id_,tempRequestNumber);
       *ret = KV_TIMEOUT;
     }
     else
     {
-      Log_info("Shard Master %lu -> Request %lu successfully handled",raft_server.loc_id_,tempRequestNumber);
+      Log_info("Shard Master %lu -> Request %lu successfully handled",raft_server.site_id_,tempRequestNumber);
       *ret = KV_SUCCESS;
     }
     my_mutex.unlock();
@@ -157,7 +157,7 @@ void ShardMasterServiceImpl::Move(const int32_t& shard, const uint32_t& gid, uin
   else
   {
     *ret = KV_NOTLEADER;
-    Log_info("Shard Master %lu -> Returning not leader for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> Returning not leader for request %lu",raft_server.site_id_,tempRequestNumber);
   }
   defer->reply();
 }
@@ -166,11 +166,11 @@ void ShardMasterServiceImpl::Query(const int32_t& config_no, uint32_t* ret, Shar
   std::recursive_mutex my_mutex;
   my_mutex.lock();
   RaftServer& raft_server = GetRaftServer();
-  Log_info("Shard Master %lu -> Got query request",raft_server.loc_id_);
+  Log_info("Shard Master %lu -> Got query request",raft_server.site_id_);
   MultiStringMarshallable m;
   auto s = make_shared<MultiStringMarshallable>();
   uint64_t tempRequestNumber = currentRequestNumber;
-  Log_info("Shard Master %lu -> Assigned request number %lu, query",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> Assigned request number %lu, query",raft_server.site_id_,tempRequestNumber);
   currentRequestNumber++;
   s->data_.push_back(to_string(tempRequestNumber));
   s->data_.push_back("query");
@@ -179,25 +179,25 @@ void ShardMasterServiceImpl::Query(const int32_t& config_no, uint32_t* ret, Shar
   uint64_t index =0 ,term = 0;
   uint64_t *pointerToIndex = &index, *pointerToTerm = &term;
   my_mutex.unlock();
-  Log_info("Shard Master %lu -> Calling start for request %lu",raft_server.loc_id_,tempRequestNumber);
+  Log_info("Shard Master %lu -> Calling start for request %lu",raft_server.site_id_,tempRequestNumber);
   if(raft_server.Start(my_command, pointerToIndex, pointerToTerm))
   {
     my_mutex.lock();
     auto ev = Reactor::CreateSpEvent<IntEvent>();
     my_waiting_requests[tempRequestNumber] = ev;
     my_mutex.unlock();
-    Log_info("Shard Master %lu -> Before waiting for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> Before waiting for request %lu",raft_server.site_id_,tempRequestNumber);
     ev->Wait(1000000);
-    Log_info("Shard Master %lu -> After waiting for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> After waiting for request %lu",raft_server.site_id_,tempRequestNumber);
     my_mutex.lock();
     if(ev->status_ == Event::TIMEOUT)
     {
-      Log_info("Shard Master %lu -> Request %lu timed out",raft_server.loc_id_,tempRequestNumber);
+      Log_info("Shard Master %lu -> Request %lu timed out",raft_server.site_id_,tempRequestNumber);
       *ret = KV_TIMEOUT;
     }
     else
     {
-      Log_info("Shard Master %lu -> Request %lu successfully handled",raft_server.loc_id_,tempRequestNumber);
+      Log_info("Shard Master %lu -> Request %lu successfully handled",raft_server.site_id_,tempRequestNumber);
       if(config_no==-1 || config_no>currentConfiguration)
         *config = configs_[currentConfiguration];
       else
@@ -209,7 +209,7 @@ void ShardMasterServiceImpl::Query(const int32_t& config_no, uint32_t* ret, Shar
   else
   {
     *ret = KV_NOTLEADER;
-    Log_info("Shard Master %lu -> Returning not leader for request %lu",raft_server.loc_id_,tempRequestNumber);
+    Log_info("Shard Master %lu -> Returning not leader for request %lu",raft_server.site_id_,tempRequestNumber);
   }
   defer->reply();
 }
@@ -332,15 +332,15 @@ void ShardMasterServiceImpl::OnNextCommand(Marshallable& m) {
   std:recursive_mutex my_mutex;
   my_mutex.lock();
   RaftServer& raftServer = GetRaftServer();
-  Log_info("Shard Master %lu -> Inside OnNextCommand",raftServer.loc_id_);
+  Log_info("Shard Master %lu -> Inside OnNextCommand",raftServer.site_id_);
   auto v = (MultiStringMarshallable*)(&m);
   string id = v->data_[0];
   uint64_t id_int = stoull(id);
-  Log_info("Shard Master %lu -> Inside OnNextCommand. Starting processing for request %lu",raftServer.loc_id_,id_int);
+  Log_info("Shard Master %lu -> Inside OnNextCommand. Starting processing for request %lu",raftServer.site_id_,id_int);
   string command = v->data_[1];
   if(command == "join")
   {
-    Log_info("Shard Master %lu -> Inside OnNextCommand. Got Join, for request %lu",raftServer.loc_id_,id_int);
+    Log_info("Shard Master %lu -> Inside OnNextCommand. Got Join, for request %lu",raftServer.site_id_,id_int);
     stringstream ss2;
     ss2 << v->data_[2];
     boost::archive::text_iarchive iarch(ss2);
@@ -350,7 +350,7 @@ void ShardMasterServiceImpl::OnNextCommand(Marshallable& m) {
   }
   else if(command == "leave")
   {
-    Log_info("Shard Master %lu -> Inside OnNextCommand. Got Leave, for request %lu",raftServer.loc_id_,id_int);
+    Log_info("Shard Master %lu -> Inside OnNextCommand. Got Leave, for request %lu",raftServer.site_id_,id_int);
     stringstream ss2;
     ss2 << v->data_[2];
     boost::archive::text_iarchive iarch(ss2);
@@ -360,14 +360,14 @@ void ShardMasterServiceImpl::OnNextCommand(Marshallable& m) {
   }
   else if(command == "move")
   {
-    Log_info("Shard Master %lu -> Inside OnNextCommand. Got Move, for request %lu",raftServer.loc_id_,id_int);
+    Log_info("Shard Master %lu -> Inside OnNextCommand. Got Move, for request %lu",raftServer.site_id_,id_int);
     uint32_t shard = stoull(v->data_[2]);
     uint32_t gid = stoull(v->data_[3]);
     HandleMove(shard,gid);
   }
   else
   {
-    Log_info("Shard Master %lu -> Inside OnNextCommand. Got Query, for request %lu",raftServer.loc_id_,id_int);
+    Log_info("Shard Master %lu -> Inside OnNextCommand. Got Query, for request %lu",raftServer.site_id_,id_int);
     uint32_t configNo = stoull(v->data_[2]);
     HandleQuery(configNo);
   }
@@ -376,7 +376,7 @@ void ShardMasterServiceImpl::OnNextCommand(Marshallable& m) {
     if(my_waiting_requests[id_int]->status_ != Event::TIMEOUT)
       my_waiting_requests[id_int]->Set(1);
     my_waiting_requests.erase(id_int);
-    Log_info("Shard Master %lu -> Inside OnNext, Processed and deleted request %lu",raftServer.loc_id_,id_int);
+    Log_info("Shard Master %lu -> Inside OnNext, Processed and deleted request %lu",raftServer.site_id_,id_int);
   }
   my_mutex.unlock();
 }
