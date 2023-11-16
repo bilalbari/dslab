@@ -149,6 +149,7 @@ class RaftServer : public TxLogServer {
     void convertToFollower(const uint64_t& term);
     void runFollowerTimeout();
     void becomeLeader();
+    void canBeCommitted(uint64_t toBeCommitted, uint64_t totalAgreement);
     void HandleRequestVote(
                         const uint64_t& term,
                         const siteid_t& candidateId,

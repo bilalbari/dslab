@@ -20,7 +20,7 @@ RaftCommo::SendRequestVote(
                             parid_t par_id,
                             siteid_t site_id,
                             uint64_t term,
-                            siteid_t candidateId,
+                            //siteid_t candidateId,
                             uint64_t lastLogIndex,
                             uint64_t lastLogTerm,
                             uint64_t* return_term,
@@ -30,7 +30,7 @@ RaftCommo::SendRequestVote(
    * Example code for sending a single RPC to server at site_id
    * You may modify and use this function or just use it as a reference
    */
-  Log_info("Server %lu -> Commo- Inside request vote",candidateId);
+  Log_info("Server %lu -> Commo- Inside request vote",site_id);
 
   auto proxies = rpc_par_proxies_[par_id];
   auto ev = Reactor::CreateSpEvent<IntEvent>();
@@ -41,7 +41,7 @@ RaftCommo::SendRequestVote(
     {
       RaftProxy *proxy = (RaftProxy*) p.second;
       FutureAttr fuattr;
-      Log_info("Server %lu -> Commo - Calling request vote to %lli",candidateId,p.first);
+      Log_info("Server %lu -> Commo - Calling request vote to %lli",site_id,p.first);
       fuattr.callback = [=](Future* fu) 
       {
         std::recursive_mutex mutex_;
@@ -55,7 +55,7 @@ RaftCommo::SendRequestVote(
                 proxy, 
                 RequestVote, 
                 term, 
-                candidateId, 
+                site_id, 
                 lastLogIndex, 
                 lastLogTerm, 
                 fuattr
@@ -69,7 +69,6 @@ shared_ptr<IntEvent>
 RaftCommo::SendAppendEntriesCombined(
                           const parid_t& par_id,
                           const siteid_t& site_id,
-                          const siteid_t& candidateId,
                           const uint64_t& prevLogIndex,
                           const uint64_t& prevLogTerm,
                           const uint64_t& logTerm,
@@ -99,15 +98,15 @@ RaftCommo::SendAppendEntriesCombined(
           ev->Set(1);
       };
       /* wrap Marshallable in a MarshallDeputy to send over RPC */
-      Log_info("Server %lu -> Trying to create marshall deputy",candidateId);
+      Log_info("Server %lu -> Trying to create marshall deputy",site_id);
       std::recursive_mutex mutex_1;
       std::lock_guard<std::recursive_mutex> lock_guard(mutex_1);
       MarshallDeputy md(cmd);
-      Log_info("Server %lu -> Creation succeeded",candidateId);
+      Log_info("Server %lu -> Creation succeeded",site_id);
       Call_Async( 
                   proxy, 
                   AppendEntriesCombined, 
-                  candidateId,
+                  site_id,
                   prevLogIndex,
                   prevLogTerm,
                   logTerm,

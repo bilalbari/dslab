@@ -19,7 +19,7 @@ class RaftCommo : public Communicator {
                     parid_t par_id,
                     siteid_t site_id,
                     uint64_t term,
-                    siteid_t candidateId,
+                    //siteid_t candidateId,
                     uint64_t lastLogIndex,
                     uint64_t lastLogTerm,
                     uint64_t *return_term,
@@ -29,7 +29,6 @@ class RaftCommo : public Communicator {
   SendAppendEntriesCombined(
                             const parid_t& par_id,
                             const siteid_t& site_id,
-                            const siteid_t& candidateId,
                             const uint64_t& prevLogIndex,
                             const uint64_t& prevLogTerm,
                             const uint64_t& logTerm,
