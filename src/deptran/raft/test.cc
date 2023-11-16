@@ -84,9 +84,7 @@ int RaftLabTest::GenericKvTest(int n_cli, bool unreliable, uint64_t timeout, int
 }
 
 int RaftLabTest::RunShard(void) {
-  Print("Starting test shard");
   Coroutine::Sleep(5000000);
-  Print("Woke up after sleep");
   int leader = config_->OneLeader();   
   if (false
       || TEST_EXPAND(testShardBasic()) 
