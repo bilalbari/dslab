@@ -10,8 +10,11 @@ class Communicator;
 class ShardMasterClient {
  public: 
   Communicator* commo_ = nullptr;
-  int leader_idx_ = 0; 
-
+  int leader_idx_ = 0;
+  ShardMasterClient()
+  {
+    commo_ = new Communicator();
+  }
   ShardMasterProxy& Proxy(siteid_t site_id);
   uint32_t Op(function<uint32_t(uint32_t*)> func);
   uint32_t Join(const std::map<uint32_t, std::vector<uint32_t>>& gid_server_map);

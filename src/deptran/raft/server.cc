@@ -104,7 +104,6 @@ void RaftServer::runFollowerTimeout(){
   mtx_.unlock();
 }
 
-
 void RaftServer::becomeCandidate()
 {
     

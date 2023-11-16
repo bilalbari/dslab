@@ -324,6 +324,7 @@ void ShardMasterServiceImpl::HandleQuery(uint32_t config_no)
 
 void ShardMasterServiceImpl::HandleMove(int32_t shard,uint32_t gid)
 {
+  currentConfig.shard_group_map_[shard] = gid;
   Log_info("Shard Master -> Successfully processed move response");
 }
 
@@ -382,9 +383,12 @@ void ShardMasterServiceImpl::OnNextCommand(Marshallable& m) {
 
 // do not change anything below
 shared_ptr<ShardMasterClient> ShardMasterServiceImpl::CreateClient() {
+  Log_info("Inside createClient");
   auto cli = make_shared<ShardMasterClient>();
+  Log_info("Got object of client");
   cli->commo_ = sp_log_svr_->commo_;
   uint32_t id = sp_log_svr_->site_id_;
+  Log_info("Updated variables");
   return cli;
 }
 
