@@ -29,7 +29,7 @@ RaftServer::RaftServer(Frame * frame, shared_ptr<Persister> persister_) {
   {
     Log_info("Server %lu -> Initialising for the first time",site_id_);
     currentTerm = 1;
-    votedFor = 6;
+    votedFor = 100;
     auto cmdptr = std::make_shared<TpcCommitCommand>();
     auto vpd_p = std::make_shared<VecPieceData>();
     vpd_p->sp_vec_piece_data_ = std::make_shared<vector<shared_ptr<SimpleCommand>>>();
@@ -64,7 +64,7 @@ void RaftServer::convertToFollower(const uint64_t& term){
 
   mtx_.lock();
   
-  votedFor = 6;
+  votedFor = 100;
   lastStartTime = std::chrono::system_clock::now();
   currentTerm = term;
   state = "follower";
@@ -116,7 +116,7 @@ void RaftServer::becomeCandidate()
   state = "candidate";
   currentTerm++;
   lastStartTime = chrono::system_clock::now();
-  votedFor = loc_id_;
+  votedFor = site_id_;
   chrono::duration<double,milli> time_spent = 
                   chrono::system_clock::now() - lastStartTime;
   auto proxies = commo()->rpc_par_proxies_[partition_id_];
@@ -265,7 +265,7 @@ void RaftServer::HandleAppendEntriesCombined(
   {
     if(state != "follower")
     {
-      votedFor = 6;
+      votedFor = 100;
       lastStartTime = std::chrono::system_clock::now();
       currentTerm = leaderCurrentTerm;
       state = "follower";
@@ -332,14 +332,14 @@ void RaftServer::HandleRequestVote(
   Log_info("Server %lu -> Received request vote call",loc_id_);
   if(term > currentTerm)
   {
-    votedFor = 6;
+    votedFor = 100;
     currentTerm = term;
     if(state != "follower")
     {
       Log_info("Server %lu -> Found state as follower. Converting to follower",site_id_);
       state = "follower";
     }
-    if(votedFor == 6 || votedFor == candidateId)
+    if(votedFor == 100 || votedFor == candidateId)
     {
       if(checkMoreUpdated(lastLogIndex, lastLogTerm))
       {
@@ -440,7 +440,7 @@ void RaftServer::becomeLeader()
               Log_info("Server %lu -> Received greater term from append entry response",site_id_);
               state = "follower";
               lastStartTime = std::chrono::system_clock::now();
-              votedFor = 6;
+              votedFor = 100;
               currentTerm = returnTerm;
             }
             else
@@ -508,6 +508,8 @@ void RaftServer::becomeLeader()
             {
               Log_info("Server %lu -> Received greater term from append entry response",site_id_);
               state = "follower";
+              lastStartTime = std::chrono::system_clock::now();
+              votedFor = 100;
               currentTerm = returnTerm;
             }
             else
