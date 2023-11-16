@@ -16,7 +16,7 @@ static int volatile x1 =
                                      });
 
 RaftServer::RaftServer(Frame * frame, shared_ptr<Persister> persister_) {
-  Log_info("Server %lu -> Inside constructor call", loc_id_);
+  Log_info("Server %lu -> Inside constructor call", site_id_);
   frame_ = frame ;
   persister = persister_;
   mtx_.lock();
@@ -27,7 +27,7 @@ RaftServer::RaftServer(Frame * frame, shared_ptr<Persister> persister_) {
   }
   else
   {
-    Log_info("Server %lu -> Initialising for the first time",loc_id_);
+    Log_info("Server %lu -> Initialising for the first time",site_id_);
     currentTerm = 1;
     votedFor = 6;
     auto cmdptr = std::make_shared<TpcCommitCommand>();
@@ -46,21 +46,21 @@ RaftServer::RaftServer(Frame * frame, shared_ptr<Persister> persister_) {
   nextIndex = vector<uint64_t>{1,1,1,1,1};
   matchIndex = vector<uint64_t>(5,0);
   mtx_.unlock();
-  Log_info("Server initialization completed for %lli",loc_id_);
+  Log_info("Server initialization completed for %lli",site_id_);
 }
 
 RaftServer::~RaftServer() {
-  Log_info("Server %lu -> Inside destructor call",loc_id_);
+  Log_info("Server %lu -> Inside destructor call",site_id_);
 }
 
 int RaftServer::generateElectionTimeout(){
-    srand(loc_id_);
+    srand(site_id_);
     return 800+(rand()%400);
 }
 
 void RaftServer::convertToFollower(const uint64_t& term){
 
-  Log_info("Starting as follower for server %lli",loc_id_);
+  Log_info("Server %lu -> Starting as follower",site_id_);
 
   mtx_.lock();
   
@@ -110,7 +110,7 @@ void RaftServer::becomeCandidate()
   int electionTimeout = generateElectionTimeout();
   
   chrono::milliseconds endTimeout(electionTimeout);
-  Log_info("Server %lu-> Candidate timeout is %i ",loc_id_,electionTimeout);
+  Log_info("Server %lu-> Candidate timeout is %i ",site_id_,electionTimeout);
   
   mtx_.lock();
   state = "candidate";
@@ -129,20 +129,19 @@ void RaftServer::becomeCandidate()
   uint64_t tempLastLogIndex = stateLog.size()-1;
   uint64_t tempLastLogTerm = stateLog[tempLastLogIndex].term;
   mtx_.unlock();
-
-  Log_info("Server %lu -> Contesting election in term %lu",loc_id_,currentTerm);
+  Log_info("Server %lu -> Contesting election in term %lu",site_id_,currentTerm);
   for(int i=0;i<proxies.size();i++)
   {
-    if(proxies[i].first != loc_id_)
+    if(proxies[i].first != site_id_)
     {
       uint64_t return_term = 0;
       bool_t vote_granted = 0;
-      Log_info("Server %lu -> Sending request vote to %lu with lastLogIndex as %lu and lastLogTerm as %lu",loc_id_,proxies[i].first, tempLastLogIndex, tempLastLogTerm);
+      Log_info("Server %lu -> Sending request vote to %lu with lastLogIndex as %lu and lastLogTerm as %lu",site_id_,proxies[i].first, tempLastLogIndex, tempLastLogTerm);
       auto event = commo()->SendRequestVote(
                             partition_id_,
                             proxies[i].first,
                             tempCurrentTerm, // sending my term
-                            loc_id_,  //sending my id
+                            site_id_,  //sending my id
                             tempLastLogIndex, //my last log index
                             tempLastLogTerm, // my last log term
                             &return_term,
@@ -153,11 +152,11 @@ void RaftServer::becomeCandidate()
       mtx_.lock();
       if(event->status_ == Event::TIMEOUT)
       {
-        Log_info("Server %lu -> Timeout happened for send request votes to %lu",loc_id_,proxies[i].first);
+        Log_info("Server %lu -> Timeout happened for send request votes to %lu",site_id_,proxies[i].first);
       }
       else
       {
-        Log_info("Server %lu -> Got reply from server %lu with vote count %d and term %lu",loc_id_,proxies[i].first,vote_granted,return_term);
+        Log_info("Server %lu -> Got reply from server %lu with vote count %d and term %lu",site_id_,proxies[i].first,vote_granted,return_term);
         if(return_term > 0)
         { 
           max_return_term = max(return_term,max_return_term);
@@ -185,13 +184,13 @@ void RaftServer::becomeCandidate()
   {
     if(max_return_term > currentTerm)
     {
-      Log_info("Server %lu -> Received bigger term after requestVote. Current term is %lu and got %lu",loc_id_,currentTerm,max_return_term);
+      Log_info("Server %lu -> Received bigger term after requestVote. Current term is %lu and got %lu",site_id_,currentTerm,max_return_term);
       state = "follower";
       currentTerm = max_return_term;
     }
     else if(total_votes_granted >= 3)
     {
-      Log_info("Server %lu -> Election supremacy. Won election in the term %lu",loc_id_,currentTerm);
+      Log_info("Server %lu -> Election supremacy. Won election in the term %lu",site_id_,currentTerm);
       state = "leader";
     }
   }
@@ -217,24 +216,24 @@ bool RaftServer::checkMoreUpdated(
   pair<uint64_t,uint64_t> my_pair = {tempLastLogIndex,stateLog[tempLastLogIndex].term};
   if(lastLogTerm < my_pair.second)
   {
-    Log_info("Server %lu -> Found last log term smaller. Have %lu, checked %lu",loc_id_,my_pair.second,lastLogTerm);
+    Log_info("Server %lu -> Found last log term smaller. Have %lu, checked %lu",site_id_,my_pair.second,lastLogTerm);
     return false;
   }
   else if(lastLogTerm > my_pair.second)
   {
-    Log_info("Server %lu -> Found last term greater. Giving vote", loc_id_);
+    Log_info("Server %lu -> Found last term greater. Giving vote", site_id_);
     return true;
   }
   else
   {
     if(lastLogIndex>= my_pair.first)
     {
-      Log_info("Server %lu -> Have %lu, Found %lu. Giving vote",loc_id_,my_pair.first,lastLogIndex);
+      Log_info("Server %lu -> Have %lu, Found %lu. Giving vote",site_id_,my_pair.first,lastLogIndex);
       return true;
     }
     else
     {
-      Log_info("Server %lu -> Have %lu, Found %lu. Not Giving vote",loc_id_,my_pair.first,lastLogIndex);
+      Log_info("Server %lu -> Have %lu, Found %lu. Not Giving vote",site_id_,my_pair.first,lastLogIndex);
       return false;
     }
     //return lastLogIndex >= my_pair.first;
@@ -277,7 +276,7 @@ void RaftServer::HandleAppendEntriesCombined(
       uint64_t currentMaxLogIndex = stateLog.size()-1;
       if(currentMaxLogIndex < prevLogIndex || stateLog[prevLogIndex].term != prevLogTerm)
       {
-        Log_info("Server %lu -> Previous log term does not match for append entry from %lu. Sending false",loc_id_,candidateId);
+        Log_info("Server %lu -> Previous log term does not match for append entry from %lu. Sending false",site_id_,candidateId);
         *followerAppendOK = 0;
       }
       else
@@ -326,7 +325,7 @@ void RaftServer::HandleRequestVote(
                       uint64_t* returnTerm,
                       bool_t* vote_granted)
 {
-  Log_info("Server %lu -> Got request vote call for %lu. With lastlogIndex as %lu and lastLogTerm as %lu",loc_id_,candidateId,lastLogIndex,lastLogTerm);
+  Log_info("Server %lu -> Got request vote call for %lu. With lastlogIndex as %lu and lastLogTerm as %lu",site_id_,candidateId,lastLogIndex,lastLogTerm);
   std::lock_guard<std::recursive_mutex> guard(mtx_);
   *vote_granted = 0;
   *returnTerm = currentTerm;
@@ -337,33 +336,33 @@ void RaftServer::HandleRequestVote(
     currentTerm = term;
     if(state != "follower")
     {
-      Log_info("Server %lu -> Found state as follower. Converting to follower",loc_id_);
+      Log_info("Server %lu -> Found state as follower. Converting to follower",site_id_);
       state = "follower";
     }
     if(votedFor == 6 || votedFor == candidateId)
     {
       if(checkMoreUpdated(lastLogIndex, lastLogTerm))
       {
-        Log_info("Server %lu -> Found logs updated, Giving vote",loc_id_);
+        Log_info("Server %lu -> Found logs updated, Giving vote",site_id_);
         *vote_granted = 1;
         votedFor = candidateId;
         lastStartTime = std::chrono::system_clock::now();
       }
       else
       {
-        Log_info("Server %lu -> Found logs as not updated, Not giving vote",loc_id_);
+        Log_info("Server %lu -> Found logs as not updated, Not giving vote",site_id_);
       }
     }
   }
   else
-    Log_info("Server %lu -> Found smaller term. Not giving vote",loc_id_);
+    Log_info("Server %lu -> Found smaller term. Not giving vote",site_id_);
 }
 
 
 void RaftServer::becomeLeader()
 {
   
-  Log_info("Server %lu -> Starting as leader",loc_id_);
+  Log_info("Server %lu -> Starting as leader",site_id_);
   mtx_.lock();
   state = "leader";
   chrono::time_point<chrono::system_clock> last_heartbeat_time;
@@ -383,19 +382,19 @@ void RaftServer::becomeLeader()
       mtx_.lock();
       if(state != "leader")
       {
-        Log_info("Server %lu -> State changed while sending heartbeats, breaking out");
+        Log_info("Server %lu -> State changed while sending heartbeats, breaking out",site_id_);
         mtx_.unlock();
         break;
       }
       mtx_.unlock();
-      Log_info("Server %lu -> Sending global append entries to %lu",loc_id_,proxies[i].first);
-      if(proxies[i].first != loc_id_)
+      Log_info("Server %lu -> Sending global append entries to %lu",site_id_,proxies[i].first);
+      if(proxies[i].first != site_id_)
       {
         mtx_.lock();
-        Log_info("Server %lu -> tempNextIndex is %lu and lastLogIndex is %lu",loc_id_,nextIndex[i],stateLog.size()-1);
+        Log_info("Server %lu -> tempNextIndex is %lu and lastLogIndex is %lu",site_id_,nextIndex[i],stateLog.size()-1);
         if(nextIndex[i] <= (stateLog.size()-1))
         {
-          Log_info("Server %lu -> Sending append entry to %lu",loc_id_,proxies[i].first);
+          Log_info("Server %lu -> Sending append entry to %lu",site_id_,proxies[i].first);
           uint64_t returnTerm = 0;
           uint64_t prevLogIndex = nextIndex[i]-1;
           uint64_t prevLogTerm = stateLog[prevLogIndex].term;
@@ -405,12 +404,12 @@ void RaftServer::becomeLeader()
           std::shared_ptr<Marshallable> my_shared = stateLog[currentNextIndex].cmd;
           bool_t followerAppendOK = 0;
           uint64_t isHeartbeat = 0;
-          Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry for %lu",loc_id_,proxies[i].first);
+          Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry for %lu",site_id_,proxies[i].first);
           mtx_.unlock();
           auto event = commo()->SendAppendEntriesCombined(
                                       partition_id_,
                                       proxies[i].first,
-                                      loc_id_,
+                                      site_id_,
                                       prevLogIndex,
                                       prevLogTerm,
                                       currentLogTerm,
@@ -427,18 +426,18 @@ void RaftServer::becomeLeader()
           
           mtx_.lock();
           //Log_info("Server %lu -> Inside start consensus after calling sleep after wait for %lu",loc_id_,proxies[i].first);
-          Log_info("Server %lu -> Got back return term %lu from %lu",loc_id_,returnTerm,proxies[i].first);
+          Log_info("Server %lu -> Got back return term %lu from %lu",site_id_,returnTerm,proxies[i].first);
           if(event->status_ == Event::TIMEOUT)
           {
-            Log_info("Server %lu -> Append entry to %lu timed out",loc_id_,proxies[i].first);
+            Log_info("Server %lu -> Append entry to %lu timed out",site_id_,proxies[i].first);
           }
           else
           {
             //Log_info("AppendEntry from %lu to %lu timed out",proxies[i].first,loc_id_);
-            Log_info("Server %lu -> Got response from %lu -> %lu as term, %d as didAppend",loc_id_,proxies[i].first,returnTerm,followerAppendOK);
+            Log_info("Server %lu -> Got response from %lu -> %lu as term, %d as didAppend",site_id_,proxies[i].first,returnTerm,followerAppendOK);
             if(returnTerm > currentTerm)
             {
-              Log_info("Server %lu -> Received greater term from append entry response",loc_id_);
+              Log_info("Server %lu -> Received greater term from append entry response",site_id_);
               state = "follower";
               lastStartTime = std::chrono::system_clock::now();
               votedFor = 6;
@@ -448,18 +447,18 @@ void RaftServer::becomeLeader()
             {
               if(followerAppendOK == 1)
               {
-                Log_info("Server %lu -> Append entry for %lu accepted",loc_id_,proxies[i].first);
+                Log_info("Server %lu -> Append entry for %lu accepted",site_id_,proxies[i].first);
                 matchIndex[i] = nextIndex[i];
                 nextIndex[i]++;
-                Log_info("Server %lu -> Increased nextIndex value to %lu and match index to %lu",loc_id_,nextIndex[i],matchIndex[i]);
+                Log_info("Server %lu -> Increased nextIndex value to %lu and match index to %lu",site_id_,nextIndex[i],matchIndex[i]);
               }
 
               else if( returnTerm != 0 )
               {
-                Log_info("Server %lu -> Append entry for %lu rejected",loc_id_,proxies[i].first);
+                Log_info("Server %lu -> Append entry for %lu rejected",site_id_,proxies[i].first);
                 if(nextIndex[i]>1)
                 {
-                  Log_info("Server %lu -> First append entry failed, retrying",loc_id_);
+                  Log_info("Server %lu -> First append entry failed, retrying",site_id_);
                   nextIndex[i] = min(nextIndex[i]-1,followerLogSize);
                 }
               }
@@ -469,7 +468,7 @@ void RaftServer::becomeLeader()
         }
         else
         {
-          Log_info("Server %lu -> Sending heartbeats to %lu",loc_id_,proxies[i].first);
+          Log_info("Server %lu -> Sending heartbeats to %lu",site_id_,proxies[i].first);
           uint64_t returnTerm = 0;
           uint64_t prevLogIndex = nextIndex[i]-1;
           uint64_t prevLogTerm = stateLog[prevLogIndex].term;
@@ -479,12 +478,12 @@ void RaftServer::becomeLeader()
           std::shared_ptr<Marshallable> my_shared(m);
           bool_t followerAppendOK = 0;
           uint64_t isHeartbeat = 1;
-          Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry as heartbeat",loc_id_);
+          Log_info("Server %lu -> Inside start concensus before calling SendAppendEntry as heartbeat",site_id_);
           mtx_.unlock();
           auto event = commo()->SendAppendEntriesCombined(
                                       partition_id_,
                                       proxies[i].first,
-                                      loc_id_,
+                                      site_id_,
                                       prevLogIndex,
                                       prevLogTerm,
                                       currentTerm,
@@ -500,14 +499,14 @@ void RaftServer::becomeLeader()
           mtx_.lock();
           if(event->status_ == Event::TIMEOUT)
           {
-            Log_info("Server %lu -> Append entry to %lu timed out",loc_id_,proxies[i].first);
+            Log_info("Server %lu -> Append entry to %lu timed out",site_id_,proxies[i].first);
           }
           else
           {
-            Log_info("Server %lu -> Got response from %lu -> %lu as term, %d as didAppend",loc_id_,proxies[i].first,returnTerm,followerAppendOK);
+            Log_info("Server %lu -> Got response from %lu -> %lu as term, %d as didAppend",site_id_,proxies[i].first,returnTerm,followerAppendOK);
             if(returnTerm > currentTerm)
             {
-              Log_info("Server %lu -> Received greater term from append entry response",loc_id_);
+              Log_info("Server %lu -> Received greater term from append entry response",site_id_);
               state = "follower";
               currentTerm = returnTerm;
             }
@@ -516,7 +515,7 @@ void RaftServer::becomeLeader()
               if(followerAppendOK)
               {
                 matchIndex[i] = stateLog.size()-1;
-                Log_info("Sever %lu -> Increased nextIndex value to %lu and match index to %lu",loc_id_,nextIndex[i],matchIndex[i]);
+                Log_info("Sever %lu -> Increased nextIndex value to %lu and match index to %lu",site_id_,nextIndex[i],matchIndex[i]);
               }
               else if(returnTerm != 0)
               {
@@ -536,12 +535,12 @@ void RaftServer::becomeLeader()
       while(true)
       {
         uint64_t total_agreement = 0;
-        Log_info("Server %lu -> Checking majority for commitIndex %lu",loc_id_,j);
+        Log_info("Server %lu -> Checking majority for commitIndex %lu",site_id_,j);
         for(int i=0;i<5;i++)
         {
           if(j <= matchIndex[i])
           {
-            Log_info("Server %lu -> Found matchIndex %lu for server %d",loc_id_, matchIndex[i],i);
+            Log_info("Server %lu -> Found matchIndex %lu for server %d",site_id_, matchIndex[i],i);
             total_agreement++;
           }
         }
@@ -549,7 +548,7 @@ void RaftServer::becomeLeader()
         {
           if(total_agreement >= 3 && stateLog[j].term == currentTerm)
           {
-            Log_info("Server %lu -> Found majority for commit index %lu",loc_id_,j);
+            Log_info("Server %lu -> Found majority for commit index %lu",site_id_,j);
             commitIndex=j;
           }
         }
@@ -557,7 +556,7 @@ void RaftServer::becomeLeader()
         {
           if(total_agreement >= 3)// && stateLog[j].term == currentTerm)
           {
-            Log_info("Server %lu -> Found majority for commit index %lu",loc_id_,j);
+            Log_info("Server %lu -> Found majority for commit index %lu",site_id_,j);
             commitIndex=j;
           }
         }
@@ -567,7 +566,7 @@ void RaftServer::becomeLeader()
       }
       while((lastApplied+1)<=commitIndex)
       {
-          Log_info("Server %lu -> Sending entry at %lu to app next",loc_id_,lastApplied+1);
+          Log_info("Server %lu -> Sending entry at %lu to app next",site_id_,lastApplied+1);
           // MarshallDeputy md(stateLog[lastApplied+1].cmd);
           // std::shared_ptr<Marshallable> entryTBC = const_cast<MarshallDeputy&>(md).sp_data_;
           // auto a = (TpcCommitCommand*)(&(*entryTBC));
@@ -581,7 +580,7 @@ void RaftServer::becomeLeader()
     if(state != "leader")
     {
       mtx_.unlock();
-      Log_info("Server %lu -> Found state as not leader, stepping down",loc_id_);
+      Log_info("Server %lu -> Found state as not leader, stepping down",site_id_);
       break;
     }
     mtx_.unlock();
@@ -590,10 +589,10 @@ void RaftServer::becomeLeader()
     
     if(sleep_time>0 && sleep_time<100)
     {
-      Log_info("Server %lu -> Sleeping for %d",loc_id_,sleep_time);
+      Log_info("Server %lu -> Sleeping for %d",site_id_,sleep_time);
       mtx_.unlock();
       Coroutine::Sleep(sleep_time*1000);
-      Log_info("Server %lu -> Inside leader after consensus after coroutine sleep 2",loc_id_);
+      Log_info("Server %lu -> Inside leader after consensus after coroutine sleep 2",site_id_);
     }
 
     mtx_.lock();
@@ -603,7 +602,7 @@ void RaftServer::becomeLeader()
       break;
     }
     mtx_.unlock();
-    Log_info("Server %lu -> Got about to die as %d inside leader",loc_id_,aboutToDie);
+    Log_info("Server %lu -> Got about to die as %d inside leader",site_id_,aboutToDie);
   }
 }
 
@@ -631,7 +630,7 @@ void RaftServer::Setup() {
         becomeLeader();
       }
       mtx_.unlock();
-      Log_info("Server %lu -> Got about to die inside setup as %lu",loc_id_,aboutToDie);
+      Log_info("Server %lu -> Got about to die inside setup as %lu",site_id_,aboutToDie);
     }
   });
 
@@ -640,7 +639,7 @@ void RaftServer::Setup() {
 
 
 void RaftServer::Shutdown() {
-  Log_info("Server %lu -> Received shutdown call",loc_id_);
+  Log_info("Server %lu -> Received shutdown call",site_id_);
   mtx_.lock();
   aboutToDie = 1;
   mtx_.unlock();
@@ -651,39 +650,39 @@ void RaftServer::Shutdown() {
 }
 
 void RaftServer::Persist() {
-  Log_info("Server %lu -> Received persist call",loc_id_);
+  Log_info("Server %lu -> Received persist call",site_id_);
   auto myCurrentState = make_shared<StateMarshallable>();
   myCurrentState->persistedTerm = currentTerm;
-  Log_info("Server %lu -> Stored current term",loc_id_);
+  Log_info("Server %lu -> Stored current term",site_id_);
   myCurrentState->persistedVotedFor = votedFor;
   Log_info("Server %lu -> Stored voted for",loc_id_);
   myCurrentState->persistedCommitIndex = commitIndex;
-  Log_info("Server %lu -> Stored commit index",loc_id_);
+  Log_info("Server %lu -> Stored commit index",site_id_);
   myCurrentState->persistedLastApplied = lastApplied;
-  Log_info("Server %lu -> Stored last applied",loc_id_);
+  Log_info("Server %lu -> Stored last applied",site_id_);
   myCurrentState->persistedLogs = stateLog;
-  Log_info("Server %lu -> Stored values till 4",loc_id_);
+  Log_info("Server %lu -> Stored values till 4",site_id_);
   auto myMarshallable = dynamic_pointer_cast<Marshallable>(myCurrentState);
   persister->SaveRaftState(myMarshallable);
-  Log_info("Server %lu -> Persist ends",loc_id_);
+  Log_info("Server %lu -> Persist ends",site_id_);
 }
 
 void RaftServer::ReadPersist() {
   mtx_.lock();
-  Log_info("Server %lu -> Found existing persisted state",loc_id_);
+  Log_info("Server %lu -> Found existing persisted state",site_id_);
   auto tempState = persister->ReadRaftState();
   auto myStoredState =  (StateMarshallable*)(&(*tempState));
-  Log_info("Server %lu -> State retrieved",loc_id_);
+  Log_info("Server %lu -> State retrieved",site_id_);
   currentTerm = myStoredState -> persistedTerm;
-  Log_info("Server %lu -> Got old term as %lu",loc_id_,currentTerm);
+  Log_info("Server %lu -> Got old term as %lu",site_id_,currentTerm);
   votedFor = myStoredState -> persistedVotedFor;
-  Log_info("Server %lu -> Got old votedFor as %lu",loc_id_,votedFor);
+  Log_info("Server %lu -> Got old votedFor as %lu",site_id_,votedFor);
   commitIndex = myStoredState -> persistedCommitIndex;
-  Log_info("Server %lu -> Got commit index as %lu",loc_id_,commitIndex);
+  Log_info("Server %lu -> Got commit index as %lu",site_id_,commitIndex);
   lastApplied = myStoredState -> persistedLastApplied;
-  Log_info("Server %lu -> Got last applied as %lu",loc_id_,lastApplied);
+  Log_info("Server %lu -> Got last applied as %lu",site_id_,lastApplied);
   stateLog = myStoredState -> persistedLogs;
-  Log_info("Server %lu -> Got back state logs",loc_id_);
+  Log_info("Server %lu -> Got back state logs",site_id_);
   mtx_.unlock();
 }
 
@@ -701,7 +700,7 @@ bool RaftServer::Start(shared_ptr<Marshallable> &cmd,
   }
   else
   {
-    Log_info("Server %lu -> Beginning start logic",loc_id_);
+    Log_info("Server %lu -> Beginning start logic",site_id_);
     stateLog.push_back(LogEntry(cmd,currentTerm));
     matchIndex[loc_id_] = stateLog.size()-1;
     uint64_t getLastLogIndex = (stateLog.size()-1);
@@ -722,7 +721,7 @@ void RaftServer::GetState(bool *is_leader, uint64_t *term) {
 
   mtx_.unlock();
 
-  Log_info("Server %lu -> replying with values as %d and term %lu ",loc_id_,*is_leader,*term);
+  Log_info("Server %lu -> replying with values as %d and term %lu ",site_id_,*is_leader,*term);
 }
 
 void RaftServer::SyncRpcExample() {
@@ -750,7 +749,7 @@ void RaftServer::SyncRpcExample() {
 /* Do not modify any code below here */
 
 void RaftServer::Disconnect(const bool disconnect) {
-  Log_info("Server %lu -> Inside connect/disconnect",loc_id_);
+  Log_info("Server %lu -> Inside connect/disconnect",site_id_);
   std::lock_guard<std::recursive_mutex> lock(mtx_);
   verify(disconnected_ != disconnect);
   // global map of rpc_par_proxies_ values accessed by partition then by site
@@ -781,7 +780,7 @@ void RaftServer::Disconnect(const bool disconnect) {
 
 bool RaftServer::IsDisconnected() 
 {
-  Log_info("Server %lu -> Checking is disconnected. Found %d",loc_id_, disconnected_);
+  Log_info("Server %lu -> Checking is disconnected. Found %d",site_id_, disconnected_);
   return disconnected_;
 }
 
