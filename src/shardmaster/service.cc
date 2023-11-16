@@ -198,6 +198,7 @@ void ShardMasterServiceImpl::Query(const int32_t& config_no, uint32_t* ret, Shar
     else
     {
       Log_info("Shard Master %lu -> Request %lu successfully handled",raft_server.site_id_,tempRequestNumber);
+      //Return required config or latest depending on the value requested
       if(config_no==-1 || config_no>currentConfiguration)
         *config = configs_[currentConfiguration];
       else
@@ -216,6 +217,9 @@ void ShardMasterServiceImpl::Query(const int32_t& config_no, uint32_t* ret, Shar
 
 map<uint32_t,vector<uint32_t>> ShardMasterServiceImpl::GetServerToShardMapping()
 {
+  /*
+    This function iterates over all shards and gives back the group to shard mapping
+  */
   map<uint32_t,vector<uint32_t>> my_mapping;
   for(auto x:currentConfig.shard_group_map_)
   {
@@ -226,6 +230,9 @@ map<uint32_t,vector<uint32_t>> ShardMasterServiceImpl::GetServerToShardMapping()
 
 vector<uint32_t> ShardMasterServiceImpl::GetAllGroups()
 {
+  /*
+    This function returns all existing groups
+  */
   vector<uint32_t> allGroups;
   for(auto x:currentConfig.group_servers_map_)
   {
@@ -236,41 +243,53 @@ vector<uint32_t> ShardMasterServiceImpl::GetAllGroups()
 
 void ShardMasterServiceImpl::HandleJoin(map<uint32_t, vector<uint32_t>> gid_server_map)
 {
+  /*
+    This function handles all incoming joins
+  */
   vector<uint32_t> incomingGroups;
+  //Add new servers to the group to server mapping and all incoming GIDS to a new vector
   for(auto x:gid_server_map)
   {
     currentConfig.group_servers_map_[x.first] = x.second;
     incomingGroups.push_back(x.first);
   }
+  //In case of default configuration
   if(currentConfiguration==0)
   {
+    //Get all GIDS present
     int currentTotalGroups = currentConfig.group_servers_map_.size();
     int startingGroup = 0;
     vector<uint32_t> allGroups = GetAllGroups();
+    //Redistribute shards among all groups in a round robin fashion
     for(auto x:currentConfig.shard_group_map_)
     {
       currentConfig.shard_group_map_[x.first] = allGroups[startingGroup++];
       startingGroup%=currentTotalGroups;
     }
+    //Increase configuration number
     currentConfiguration++;
     currentConfig.number = currentConfiguration;
     configs_[currentConfiguration] = currentConfig;
   }
   else
   {
+    //Get all shards and replica groups to distributed them
     int currentTotalShards = currentConfig.shard_group_map_.size();
     int totalServers = currentConfig.group_servers_map_.size();
     int maxShardLimit = currentTotalShards/totalServers;
+    //Get group to shard mapping
     map<uint32_t,vector<uint32_t>> serverToShardMapping = GetServerToShardMapping();
     vector<uint32_t> extraShards;
     for(auto x:serverToShardMapping)
     {
+      //Find all groups having over allocated shards and store the extra shards
       if(x.second.size()>maxShardLimit)
       {
         for(int i=maxShardLimit;i<x.second.size();i++)
           extraShards.push_back(x.second[i]);
       }
     }
+    //Distributed the extra shards among the total servers in a round robin fashion
     int startingGroup = 0;
     int incomingGroupTotal = incomingGroups.size();
     for(auto x:extraShards)
@@ -278,6 +297,7 @@ void ShardMasterServiceImpl::HandleJoin(map<uint32_t, vector<uint32_t>> gid_serv
       currentConfig.shard_group_map_[x] = incomingGroups[startingGroup++];
       startingGroup%=incomingGroupTotal;
     }
+    //Update configuration
     currentConfiguration++;
     currentConfig.number = currentConfiguration;
     configs_[currentConfiguration] = currentConfig;
@@ -290,11 +310,13 @@ void ShardMasterServiceImpl::HandleLeave(vector<uint32_t> gids)
   vector<uint32_t> redistributedShards;
   unordered_map<uint32_t,uint32_t> leavingServers;
   map<uint32_t,vector<uint32_t>> serverToShardMapping = GetServerToShardMapping();
+  //Get all leaving servers and erase them from group to server mapping
   for(auto x: gids)
   {  
     leavingServers[x] = 1;
     currentConfig.group_servers_map_.erase(x);
   }
+  //In server to shard mapping, find leaving servers and store their shards and remaining servers also
   for(auto x:serverToShardMapping)
   {
     if(leavingServers.find(x.first)!=leavingServers.end())
@@ -305,6 +327,7 @@ void ShardMasterServiceImpl::HandleLeave(vector<uint32_t> gids)
     else
       remainingServers.push_back(x.first);
   }
+  //Distribute extra shards among the remaining servers
   int startingGroup = 0;
   int totalRemainingGroups = remainingServers.size();
   for(auto x:redistributedShards)
@@ -324,7 +347,11 @@ void ShardMasterServiceImpl::HandleQuery(uint32_t config_no)
 
 void ShardMasterServiceImpl::HandleMove(int32_t shard,uint32_t gid)
 {
+  //In case of move, update the shard to the new GID and store new config
   currentConfig.shard_group_map_[shard] = gid;
+  currentConfiguration++;
+  currentConfig.number = currentConfiguration;
+  configs_[currentConfiguration] = currentConfig;
   Log_info("Shard Master -> Successfully processed move response");
 }
 

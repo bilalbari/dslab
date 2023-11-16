@@ -370,30 +370,24 @@ int RaftLabTest::testShardStaticShardsPut() {
   auto sm_cli = config_->GetShardMasterServer(0)->CreateClient();
   map<uint32_t, vector<uint32_t>> group_servers_2 = {{2,{10,11,12,13,14}}};
   auto ret = sm_cli->Join(group_servers_2);
-  Print("Join executed successfully");
   verify(ret == KV_SUCCESS);
   auto kv_cli = ShardKvServer::CreateClient(config_->GetShardMasterServer(0)->sp_log_svr_->commo_);
-  Print("Created shard KV instance");
   string k1 = "1";
   int r1 = RandomGenerator::rand(0,10000);
   string v1 = to_string(r1);
   auto ret1 = kv_cli->Put(k1, v1);
   verify(ret1 == KV_SUCCESS);
-  Print("Successfully executed put 1");
   string k2 = "2";
   int r2 = RandomGenerator::rand(0,10000);
   string v2 = to_string(r2);
   auto ret2 = kv_cli->Put(k2, v2);
   verify(ret2 == KV_SUCCESS);
-  Print("Successfully executed put 2");
   string val1;
   kv_cli->Get(k1, &val1);
   verify(v1 == val1);
-  Print("Successfully executed get 1");
   string val2;
   kv_cli->Get(k2, &val2);
   verify(v2 == val2);
-  Print("Successfully executed get 2");
   Passed2();
 }
 
