@@ -17,6 +17,7 @@
 #include "raft_rpc.h"
 #include "macros.h"
 #include "../communicator.h"
+#define Log_info Log_debug
 
 using namespace std;
 
