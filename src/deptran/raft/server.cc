@@ -605,7 +605,7 @@ void RaftServer::becomeLeader()
               if(followerAppendOK)
               {
                 matchIndex[i] = stateLog.size()-1;
-                Log_info("Sever %lu -> Increased nextIndex value to %lu and match index to %lu",site_id_,nextIndex[i],matchIndex[i]);
+                Log_info("Server %lu -> Increased nextIndex value to %lu and match index to %lu",site_id_,nextIndex[i],matchIndex[i]);
               }
               else if(returnTerm != 0)
               {
