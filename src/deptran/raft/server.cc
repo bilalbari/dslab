@@ -1,6 +1,6 @@
 #include "server.h"
 // #include "paxos_worker.h"
-//#define Log_info Log_debug
+#define Log_info Log_debug
 #include "exec.h"
 #include "frame.h"
 #include "coordinator.h"

@@ -2,6 +2,7 @@
 #include "server.h"
 #include "../deptran/raft/server.h"
 #include "client.h"
+#define Log_info Log_debug
 
 namespace janus {
 
