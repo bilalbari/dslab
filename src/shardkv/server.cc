@@ -199,7 +199,7 @@ void ShardKvServer::OnNextCommand(Marshallable& m) {
       if(outstanding_requests_[oid]->status_ != Event::TIMEOUT)
         outstanding_requests_[oid]->Set(1);
       outstanding_requests_.erase(oid);
-      Log_info("KV Server %lu -> OnNext, Processed and deleted pending request %lu",raft_server.site_id_,oid_int);
+      Log_info("KV Server %lu -> OnNext, Processed and deleted pending %lu",raft_server.site_id_,oid_int);
     }
     my_mutex.unlock();
 }
