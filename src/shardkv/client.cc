@@ -86,4 +86,29 @@ ShardMasterClient ShardKvClient::CreateShardMasterClient(){
   return *p;
 }
 
+uint64_t ShardKvClient::TxBegin() {
+  // Insert your code
+  return 0;
+}
+
+int ShardKvClient::TxPut(const uint64_t tx_id, const string& k, const string& v) {
+  // Insert your code
+  return KV_SUCCESS;
+}
+
+int ShardKvClient::TxGet(const uint64_t tx_id, const string& k, string* v) {
+  // Insert your code
+  return KV_SUCCESS;
+}
+
+int ShardKvClient::TxCommit(const uint64_t tx_id) {
+  // Insert your code
+  return TX_NOTFOUND;
+}
+
+int ShardKvClient::TxAbort(const uint64_t tx_id) {
+  // Insert your code
+  return TX_NOTFOUND;
+}
+
 } // namesapce janus;
