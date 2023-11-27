@@ -4,7 +4,8 @@
 #include "../deptran/__dep__.h"
 #include "shardkv_rpc.h"
 #include "../shardmaster/client.h"
-
+#define ff first
+#define ss second
 namespace janus {
 
 class Communicator;
@@ -12,7 +13,9 @@ class ShardKvClient {
  public: 
   Communicator* commo_ = nullptr;
   shared_ptr<ShardMasterService> sms_log_svr_; 
-  int leader_idx_ = 0; 
+  int leader_idx_ = 0;
+  unordered_map<uint64_t, unordered_map<string,pair<string,string> > > myClientMap;
+  recursive_mutex myMutex;
   uint32_t cli_id_{UINT32_MAX};
   uint64_t counter_{0};
   ShardKvClient()

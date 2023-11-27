@@ -81,33 +81,110 @@ int ShardKvClient::Get(const string& k, string* v) {
   },k);
 }
 
-ShardMasterClient ShardKvClient::CreateShardMasterClient(){
-  auto p = make_shared<ShardMasterClient>();
-  return *p;
-}
 
 uint64_t ShardKvClient::TxBegin() {
-  // Insert your code
-  return 0;
+  myMutex.lock();
+  uint64_t txID = GetNextOpId();
+  myClientMap[txID] = unordered_map<string,pair<string,string>>();
+  myMutex.unlock();
+  return txID;
 }
 
 int ShardKvClient::TxPut(const uint64_t tx_id, const string& k, const string& v) {
-  // Insert your code
+  myMutex.lock();
+  //Check presence of key in buffer
+  auto it = myClientMap[tx_id].find(k);
+  //Key found
+  if(it!=myClientMap[tx_id].end())
+  {
+    //Update the value in the map
+    it->second.second = v; 
+  }
+  else
+  {
+    //First put
+    myClientMap[tx_id][k] = make_pair("",v);
+  }
+  myMutex.unlock();
   return KV_SUCCESS;
 }
 
 int ShardKvClient::TxGet(const uint64_t tx_id, const string& k, string* v) {
-  // Insert your code
+  myMutex.lock();
+  //Check key in buffer
+  auto it = myClientMap[tx_id].find(k);
+  if(it!=myClientMap[tx_id].end())
+  {
+    auto oldValue = it->second.first;
+    auto newValue = it->second.second;
+    //Check if only a put has been called
+    if(oldValue == "")
+    {
+      string value = "";
+      Get(k,&value);
+      it->second.first = value;
+    }
+    *v = newValue;
+  }
+  else
+  {
+    string value = "";
+    Get(k,&value);
+    myClientMap[tx_id][k] = make_pair(value,value);
+    *v = value;
+  }
+  myMutex.unlock();
   return KV_SUCCESS;
 }
 
 int ShardKvClient::TxCommit(const uint64_t tx_id) {
-  // Insert your code
-  return TX_NOTFOUND;
+  myMutex.lock();
+  auto it = myClientMap.find(tx_id);
+  if(it!=myClientMap.end())
+  {
+    for(auto x:myClientMap[tx_id])
+    {
+      string k = x.first;
+      string oldValue = x.second.first;
+      string newValue  = x.second.second;
+      if(oldValue != "")
+      {
+        string getValue = "";
+        Get(k,&getValue);
+        if(oldValue != getValue)
+        {
+          myMutex.unlock();
+          return TX_ABORTED;
+        }
+      }
+    }
+    for(auto x:myClientMap[tx_id])
+    {
+      string k = x.first;
+      string newValue  = x.second.second;
+      string getValue = "";
+      Put(k,newValue);
+    }
+    myMutex.unlock();
+    return TX_COMMITTED;
+  }
+  else
+  {
+    myMutex.unlock();
+    return TX_NOTFOUND;
+  }
 }
 
 int ShardKvClient::TxAbort(const uint64_t tx_id) {
-  // Insert your code
+  myMutex.lock();
+  auto it = myClientMap.find(tx_id);
+  if(it!=myClientMap.end())
+  {
+    myClientMap.erase(tx_id);
+    myMutex.unlock();
+    return TX_ABORTED;
+  }
+  myMutex.unlock();
   return TX_NOTFOUND;
 }
 
